@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>患者详情</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f4f7fa;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        h3,
+        h5 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-left: 5px solid #00b894;
+            padding-left: 10px;
+        }
+
+        .list-group {
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            background-color: white;
+        }
+
+        .list-group-item {
+            border: none;
+            border-bottom: 1px solid #ecf0f1;
+            padding: 15px 20px;
+        }
+
+        .list-group-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-group-item strong {
+            color: #34495e;
+        }
+
+        .text-muted {
+            color: #999 !important;
+            font-style: italic;
+        }
+
+        .container {
+            max-width: 900px;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+            border: none;
+            padding: 10px 25px;
+            font-weight: bold;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+
+        ul ul {
+            padding-left: 1.5rem;
+        }
+
+        ul ul li {
+            background-color: #f0f5f7;
+            margin-top: 5px;
+            border-left: 3px solid #3498db;
+            padding: 10px 15px;
+            border-radius: 6px;
+        }
+
+        @media (max-width: 576px) {
+            .container {
+                padding: 20px;
+            }
+
+            .list-group-item {
+                font-size: 14px;
+            }
+
+            h3,
+            h5 {
+                font-size: 18px;
+            }
+        }
+    </style>
+
+
+    <!-- 字体图标备用方案 -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 检查字体图标是否正确加载
+        setTimeout(function() {
+            var testIcon = document.createElement('i');
+            testIcon.className = 'fas fa-user';
+            testIcon.style.visibility = 'hidden';
+            document.body.appendChild(testIcon);
+            
+            var iconStyle = window.getComputedStyle(testIcon);
+            var isFontLoaded = iconStyle.fontFamily.includes('Font Awesome') || 
+                               iconStyle.fontFamily.includes('FontAwesome');
+            
+            if (!isFontLoaded) {
+                console.log('字体图标未正确加载，加载备用方案');
+                // 加载备用CSS
+                var link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = '../static/download_style/css/font-awesome-4.7.0.min.css';
+                document.head.appendChild(link);
+            }
+            
+            document.body.removeChild(testIcon);
+        }, 500);
+    });
+    </script>
+    </head>
+
+<body>
+<div class="container mt-5">
+    <h3>患者详情</h3>
+    <!-- 基本信息 -->
+    <ul class="list-group mb-4">
+        <li class="list-group-item"><strong>姓名：</strong>{{ patient.name }}</li>
+        <li class="list-group-item"><strong>年龄：</strong>{{ patient.age }} 岁</li>
+        <li class="list-group-item"><strong>性别：</strong>{{ patient.gender }}</li>
+        <li class="list-group-item"><strong>地址：</strong>{{ patient.address }}</li>
+        <li class="list-group-item"><strong>联系方式：</strong>{{ patient.contact_info }}</li>
+        <li class="list-group-item"><strong>血型：</strong>{{ patient.blood_type or '未知' }}</li>
+        <li class="list-group-item"><strong>紧急联系人：</strong>{{ patient.emergency_contact or '无' }}</li>
+    </ul>
+
+    <!-- 病史记录 -->
+    <h5>病史记录</h5>
+    <ul class="list-group mb-4">
+        {% if medical_history %}
+        <li class="list-group-item"><strong>过敏史：</strong>{{ medical_history.allergy_info or '无' }}</li>
+        <li class="list-group-item"><strong>家族病史：</strong>{{ medical_history.family_history or '无' }}</li>
+        <li class="list-group-item"><strong>既往头部创伤：</strong>{{ medical_history.previous_head_injuries or '无' }}
+        </li>
+        <li class="list-group-item"><strong>神经系统疾病史：</strong>{{ medical_history.neurological_conditions or '无'
+            }}
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">无</li>
+        {% endif %}
+    </ul>
+
+    <!-- 体检记录 -->
+    <h5>体检记录</h5>
+    <ul class="list-group mb-4">
+        {% for e in physical_exams %}
+        <li class="list-group-item">
+            日期：{{ e.exam_date }}，
+            心率：{{ e.heart_rate }} 次/分，
+            呼吸：{{ e.respiratory_rate }} 次/分，
+            血压：{{ e.blood_pressure_systolic }}/{{ e.blood_pressure_diastolic }} mmHg，
+            体温：{{ e.temperature }} ℃，
+            体重：{{ e.weight }} kg，
+            身高：{{ e.height }} cm
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">无</li>
+        {% endfor %}
+    </ul>
+
+    <!-- 脑部CT扫描 -->
+    <h5>脑部CT扫描记录</h5>
+    <ul class="list-group mb-4">
+        {% for scan in brain_ct_scans %}
+        <li class="list-group-item">
+            <strong>扫描日期：</strong>{{ scan.scan_date }}，
+            <strong>类型：</strong>{{ scan.scan_type }}，
+            <strong>技术员：</strong>{{ scan.technician }}，
+            <strong>放射科医师：</strong>{{ scan.radiologist }}，
+            <strong>原因：</strong>{{ scan.scan_reason }}<br>
+            <strong>脑结构：</strong>{{ scan.brain_structure }}，
+            <strong>脑室状态：</strong>{{ scan.ventricle_status }}，
+            <strong>颅骨状况：</strong>{{ scan.skull_condition }}，
+            <strong>病变描述：</strong>{{ scan.lesion_description }}，
+            <strong>出血状态：</strong>{{ scan.hemorrhage_status }}，
+            <strong>缺血情况：</strong>{{ scan.ischemia_status }}，
+            <strong>萎缩情况：</strong>{{ scan.atrophy_status }}，
+            <strong>密度异常：</strong>{{ scan.density_abnormalities }}，
+            <strong>结论：</strong>{{ scan.conclusion }}，
+            <strong>建议随访：</strong>{{ '是' if scan.follow_up_recommended else '否' }}
+        </li>
+        {% if ct_followups.get(scan.scan_id) %}
+        <li class="list-group-item ps-5">
+            <strong>随访记录：</strong>
+            <ul>
+                {% for f in ct_followups[scan.scan_id] %}
+                <li>
+                    日期：{{ f.follow_up_date }}，
+                    比较结果：{{ f.comparison_results }}，
+                    病情进展：{{ f.disease_progression }}，
+                    治疗反应：{{ f.treatment_response }}，
+                    下次随访：{{ f.next_follow_up }}
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
+        {% else %}
+        <li class="list-group-item text-muted">无</li>
+        {% endfor %}
+    </ul>
+
+    <!-- 神经系统评估 -->
+    <h5>神经系统评估</h5>
+    <ul class="list-group mb-4">
+        {% for na in neuro_assessments %}
+        <li class="list-group-item">
+            日期：{{ na.assessment_date }}，
+            运动：{{ na.motor_function }}，
+            感觉：{{ na.sensory_function }}，
+            反射：{{ na.reflex_status }}，
+            协调：{{ na.coordination }}，
+            脑神经检查：{{ na.cranial_nerve_exam }}，
+            GCS：{{ na.gcs_score }}，
+            MMSE：{{ na.mmse_score }}，
+            MoCA：{{ na.moca_score }}，
+            备注：{{ na.assessment_notes }}，
+            医师：{{ na.performed_by }}
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">无</li>
+        {% endfor %}
+    </ul>
+
+    <!-- 用药记录 -->
+    <h5>用药记录</h5>
+    <ul class="list-group mb-4">
+        {% for m in medication_records %}
+        <li class="list-group-item">
+            药物：{{ m.medication_name }}，
+            剂量：{{ m.dosage }}，
+            频率：{{ m.frequency }}，
+            给药途径：{{ m.administration_route }}，
+            时间：{{ m.start_date }} - {{ m.end_date }}，
+            指征：{{ m.indication or '无' }}，
+            副作用：{{ m.side_effects or '无' }}，
+            疗效：{{ m.effectiveness or '无' }}，
+            备注：{{ m.notes or '无' }}
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">无</li>
+        {% endfor %}
+    </ul>
+
+    <!-- 心理健康评估 -->
+    <h5>心理健康评估</h5>
+    <ul class="list-group mb-4">
+        {% for mh in mental_health %}
+        <li class="list-group-item">
+            日期：{{ mh.assessment_date }}，
+            状态总结：{{ mh.status_summary }}，
+            焦虑：{{ mh.anxiety_level }}，
+            抑郁：{{ mh.depression_level }}，
+            睡眠质量：{{ mh.sleep_quality }}，
+            建议：{{ mh.recommended_action }}
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">无</li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">返回主页</a>
+</div>
+</body>
+
+</html>

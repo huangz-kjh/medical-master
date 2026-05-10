@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>患者管理系统-注册</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta http-equiv="Access-Control-Allow-Origin" content="*">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="format-detection" content="telephone=no">
+  <link href="//unpkg.com/layui@2.10.1/dist/css/layui.css" rel="stylesheet">
+  <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+  <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+  <style>
+    .layui-container {
+      height: 100vh;
+      overflow-y: auto;
+      padding: 20px 0;
+    }
+
+    .login-form {
+      padding: 20px 30px;
+      width: 450px;
+      margin: 0 auto;
+      margin-top: 50px;
+      margin-bottom: 50px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .error-text {
+      color: #FF5722;
+      font-size: 12px;
+      padding-left: 38px;
+      display: block;
+      line-height: 1.5;
+      margin-top: 5px;
+    }
+
+    .success-text {
+      color: #009688;
+      font-size: 12px;
+      padding-left: 38px;
+      display: block;
+      line-height: 1.5;
+      margin-top: 5px;
+    }
+    
+    /* 状态消息样式 */
+    .status-message {
+      padding-left: 38px;
+      font-size: 12px;
+      line-height: 1.5;
+      margin-top: 5px;
+      min-height: 18px;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .layui-form-item {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .layui-input {
+      height: 38px;
+      line-height: 38px;
+      transition: all 0.3s;
+    }
+
+    .layui-input:focus {
+      border-color: #009688 !important;
+      box-shadow: 0 0 0 2px rgba(0, 150, 136, 0.2);
+    }
+
+    .layui-input.layui-form-danger {
+      border-color: #FF5722 !important;
+    }
+
+    .layui-btn {
+      height: 40px;
+      line-height: 40px;
+      font-size: 16px;
+    }
+
+    .logo-title {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .logo-title h1 {
+      font-size: 24px;
+      color: #333;
+      margin: 0;
+    }
+
+    .layui-form-label {
+      width: 100px;
+      padding: 9px 0;
+    }
+
+    .layui-input-block {
+      margin-left: 130px;
+    }
+
+    .layui-form-radio {
+      margin: 0;
+      padding: 0;
+    }
+
+    .layui-form-radio i {
+      font-size: 16px;
+    }
+
+    .layui-form-select dl {
+      max-height: 200px;
+    }
+
+    /* 输入验证状态图标 */
+    .input-status-icon {
+      position: absolute;
+      right: 10px;
+      top: 11px;
+      font-size: 16px;
+    }
+    
+    .input-status-icon.success {
+      color: #009688;
+    }
+    
+    .input-status-icon.error {
+      color: #FF5722;
+    }
+    
+    .input-status-icon.loading {
+      color: #1E9FFF;
+    }
+
+    /* 自定义滚动条样式 */
+    .layui-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .layui-container::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    .layui-container::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+
+    .layui-container::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    /* 表单验证提示样式 */
+    #errorMsg {
+      background-color: #FFF2F0;
+      border: 1px solid #FFCCC7;
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+    
+    #errorMsg .error-text {
+      padding-left: 0;
+      font-size: 14px;
+      color: #FF4D4F;
+    }
+
+    @media screen and (max-width: 768px) {
+      .login-form {
+        width: 90%;
+        margin-top: 20px;
+      }
+
+      .layui-form-label {
+        width: 80px;
+      }
+
+      .layui-input-block {
+        margin-left: 90px;
+      }
+    }
+  </style>
+
+    <!-- 字体图标备用方案 -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 检查字体图标是否正确加载
+        setTimeout(function() {
+            var testIcon = document.createElement('i');
+            testIcon.className = 'fas fa-user';
+            testIcon.style.visibility = 'hidden';
+            document.body.appendChild(testIcon);
+            
+            var iconStyle = window.getComputedStyle(testIcon);
+            var isFontLoaded = iconStyle.fontFamily.includes('Font Awesome') || 
+                               iconStyle.fontFamily.includes('FontAwesome');
+            
+            if (!isFontLoaded) {
+                console.log('字体图标未正确加载，加载备用方案');
+                // 加载备用CSS
+                var link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = '../static/download_style/css/font-awesome-4.7.0.min.css';
+                document.head.appendChild(link);
+            }
+            
+            document.body.removeChild(testIcon);
+        }, 500);
+    });
+    </script>
+    </head>
+
+<body>
+  <div class="layui-container">
+    <div class="admin-login-background" style="top: 15% ;left: 45%">
+      <div class="layui-form login-form">
+        <form class="layui-form" id="registerForm" style="">
+          <div class="layui-form-item logo-title">
+            <h1>患者管理系统注册</h1>
+          </div>
+
+          <div id="errorMsg" class="layui-form-item" style="display:none;">
+            <div class="error-text"></div>
+          </div>
+
+          <!-- 基本信息部分 -->
+          <div class="layui-form-item">
+            <label class="layui-icon layui-icon-username" for="username"></label>
+            <input type="text" id="username" name="username" lay-verify="required|username" placeholder="请输入用户名"
+              autocomplete="off" class="layui-input">
+            <div id="username-check" class="status-message"></div>
+          </div>
+
+          <div class="layui-form-item">
+            <label class="layui-icon layui-icon-password" for="password"></label>
+            <input type="password" id="password" name="password" lay-verify="required|password" placeholder="请输入密码"
+              autocomplete="off" class="layui-input">
+          </div>
+
+          <div class="layui-form-item">
+            <label class="layui-icon layui-icon-password" for="confirm_password"></label>
+            <input type="password" id="confirm_password" name="confirm_password" lay-verify="required"
+              placeholder="确认密码" autocomplete="off" class="layui-input">
+          </div>
+
+          <div class="layui-form-item">
+            <label class="layui-icon layui-icon-user" for="real_name"></label>
+            <input type="text" id="real_name" name="real_name" lay-verify="required" placeholder="请输入真实姓名"
+              autocomplete="off" class="layui-input">
+          </div>
+
+          <div class="layui-form-item">
+            <label class="layui-icon layui-icon-template-1" for="id_card"></label>
+            <input type="text" id="id_card" name="id_card" lay-verify="required|identity" placeholder="请输入身份证号"
+              autocomplete="off" class="layui-input">
+            <div id="id-check" class="status-message"></div>
+          </div>
+
+          <div class="layui-form-item">
+            <label class="layui-icon layui-icon-cellphone" for="phone"></label>
+            <input type="text" id="phone" name="phone" lay-verify="required|phone" placeholder="请输入手机号码"
+              autocomplete="off" class="layui-input">
+          </div>
+
+          <div class="layui-form-item">
+            <label class="layui-icon layui-icon-email" for="email"></label>
+            <input type="email" id="email" name="email" lay-verify="email" placeholder="请输入邮箱" autocomplete="off"
+              class="layui-input">
+          </div>
+
+          <!-- 患者信息部分 -->
+           <div class="layui-form-item" style="display: flex; align-items: center;">
+<!--              <label class="layui-form-label" style="margin-bottom: 0; line-height: 38px;">性别</label>-->
+              <div class="layui-input-block" style="margin: 0;">
+                <input type="radio" name="gender" value="男" title="男" checked>
+                <input type="radio" name="gender" value="女" title="女">
+              </div>
+          </div>
+
+
+
+
+          <div class="layui-form-item">
+            <label class="layui-icon layui-icon-senior" for="age"></label>
+            <input type="number" id="age" name="age" lay-verify="number" placeholder="请输入年龄" autocomplete="off"
+              class="layui-input">
+          </div>
+
+          <div class="layui-form-item">
+            <label class="layui-icon layui-icon-location" for="address"></label>
+            <input type="text" id="address" name="address" placeholder="请输入家庭住址（选填）" autocomplete="off"
+              class="layui-input">
+          </div>
+
+          <div class="layui-form-item" style="display: flex; align-items: center;">
+            <label class="layui-form-label" style="margin-bottom: 0;">血型</label>
+            <div class="layui-input-block" style="margin: 0; flex: 1;">
+              <select name="blood_type">
+                <option value="">请选择血型</option>
+                <option value="A">A型</option>
+                <option value="B">B型</option>
+                <option value="AB">AB型</option>
+                <option value="O">O型</option>
+              </select>
+            </div>
+          </div>
+
+
+
+          <div class="layui-form-item">
+            <label class="layui-icon layui-icon-dialogue" for="emergency_contact_name"></label>
+            <input type="text" id="emergency_contact_name" name="emergency_contact_name" placeholder="紧急联系人姓名（选填）"
+              autocomplete="off" class="layui-input">
+          </div>
+
+          <div class="layui-form-item">
+            <label class="layui-icon layui-icon-cellphone" for="emergency_contact_phone"></label>
+            <input type="text" id="emergency_contact_phone" name="emergency_contact_phone" placeholder="紧急联系人电话（选填）"
+              autocomplete="off" class="layui-input">
+          </div>
+
+          <div class="layui-form-item">
+            <button class="layui-btn layui-btn-normal layui-btn-fluid" lay-submit lay-filter="register">注 册
+            </button>
+          </div>
+
+          <div class="layui-form-item" style="text-align:center;">
+            <a href="{{ url_for('login') }}">已有账号？去登录</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- jQuery -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <!-- Layui -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/layui/2.5.5/layui.min.js"></script>
+  <!-- 粒子背景插件 -->
+  <script src="{{ url_for('static', filename='lib/jq-module/jquery.particleground.min.js') }}" charset="utf-8"></script>
+
+  <script src="{{ url_for('static', filename='js/register.js') }}"></script>
+</body>
+
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能影像平台</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+
+    <!-- 字体图标备用方案 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 检查字体图标是否正确加载
+            setTimeout(function () {
+                var testIcon = document.createElement('i');
+                testIcon.className = 'fas fa-user';
+                testIcon.style.visibility = 'hidden';
+                document.body.appendChild(testIcon);
+
+                var iconStyle = window.getComputedStyle(testIcon);
+                var isFontLoaded = iconStyle.fontFamily.includes('Font Awesome') ||
+                    iconStyle.fontFamily.includes('FontAwesome');
+
+                if (!isFontLoaded) {
+                    console.log('字体图标未正确加载，加载备用方案');
+                    // 加载备用CSS
+                    var link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = '../static/download_style/css/font-awesome-4.7.0.min.css';
+                    document.head.appendChild(link);
+                }
+
+                document.body.removeChild(testIcon);
+            }, 500);
+        });
+    </script>
+</head>
+
+<body>
+<div class="app-layout">
+    <div class="sidebar hidden">
+        <div class="sidebar-header">
+            <h3>聊天记录</h3>
+            <button id="new-chat-btn" class="new-chat-btn" data-url="/chat/new">新</button>
+        </div>
+        <div class="history-list" id="history-list">
+            {% if current_session %}
+            <div class="history-item chat-action current-session active"
+                 data-session-id="{{ current_session.session_id }}">
+                <div class="history-title">{{ current_session.title }}</div>
+                <div class="history-time">{{ current_session.updated_at.strftime('%Y-%m-%d %H:%M') }}</div>
+            </div>
+            {% endif %}
+            {% for session in chat_sessions %}
+            {% if current_session and session.session_id != current_session.session_id %}
+            <div class="history-item chat-action" data-url="/chat/{{ session.session_id }}"
+                 data-session-id="{{ session.session_id }}">
+                <div class="history-title">{{ session.title }}</div>
+                <div class="history-time">{{ session.updated_at.strftime('%Y-%m-%d %H:%M') }}</div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 侧边栏切换按钮 -->
+    <div class="sidebar-toggle active" id="sidebar-toggle" title="切换侧边栏"></div>
+
+    <div class="main-content full-width">
+        <div class="chat-container" id="chat-container">
+            <!-- 欢迎消息 -->
+            <div class="welcome-message">
+                <div class="welcome-icon">👋</div>
+                <h1>欢迎使用智能影像平台</h1>
+                <p>我是您的智能聊天助手，请问有什么可以帮助您的吗？</p>
+            </div>
+        </div>
+
+        <!-- 快捷按钮区域 -->
+        <div class="quick-actions" id="quickActions">
+            <button class="quick-action-btn chat-action" data-url="/chat/medical-consultation"
+                    data-action="medical-consultation">
+                <span class="icon">💊</span>
+                <span class="text">症状分析</span>
+            </button>
+            {% if user_role == 'doctor' %}
+            <button class="quick-action-btn" id="reportGenerationBtn" data-action="medical-consultation">
+                <span class="icon">📋</span>
+                <span class="text">医学助手</span>
+            </button>
+            {% endif %}
+        </div>
+
+        <div class="input-wrapper full-width">
+            <div class="input-group">
+                <input type="text" id="user-input" placeholder="输入消息..." enterkeyhint="send"/>
+                <div class="file-upload">
+                    <input type="file" id="user-image" accept="image/*"/>
+                    <label for="user-image" class="icon-button" title="上传图片"></label>
+                </div>
+                <button class="send-button chat-action" data-url="/chat/send" onclick="sendMessage()"
+                        aria-label="发送消息">
+                    <span class="button-text"></span>
+                    <span class="loading-dots" style="display:none;">⏳</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+</body>
+
+</html>

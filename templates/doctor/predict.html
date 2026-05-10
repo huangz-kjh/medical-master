@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>智能医疗诊断系统</title>
+    <!-- 添加跨域资源共享头，仅使用HTTP头设置的方式 -->
+    <meta content="*" http-equiv="Access-Control-Allow-Origin" />
+    <!-- 移除有问题的iframe嵌入设置，这些应当通过HTTP头设置 -->
+    <!-- 样式和脚本链接 -->
+    <link href="https://cdn.staticfile.org/layui/2.8.3/css/layui.css" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='css/predict.css') }}" rel="stylesheet" />
+    <script src="../static/download_style/js/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/layui/2.8.3/layui.js"></script>
+    <!-- 引入 ECharts -->
+    <script src="../static/download_style/js/echarts.min.js"></script>
+    <script>
+      // 设置跨域通信标志
+      window.isEmbedded = window.parent !== window
+
+      // 设置CORS调试日志
+      console.log('当前页面URL:', window.location.href)
+      console.log('当前页面域:', window.location.origin)
+      console.log('iframe模式:', window.isEmbedded ? '是' : '否')
+
+      // 添加跨域消息处理
+      window.addEventListener('message', function (event) {
+        // 输出收到的消息
+        console.log('收到跨域消息:', event.data)
+
+        // iframe-loaded消息表示父页面已准备好
+        if (event.data === 'iframe-loaded') {
+          console.log('iframe成功加载并建立通信')
+          // 发送回应消息表示预测模块已准备好
+          event.source.postMessage('predict-module-ready', '*')
+        }
+      })
+    </script>
+
+    <!-- 字体图标备用方案 -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // 检查字体图标是否正确加载
+        setTimeout(function () {
+          var testIcon = document.createElement('i')
+          testIcon.className = 'fas fa-user'
+          testIcon.style.visibility = 'hidden'
+          document.body.appendChild(testIcon)
+
+          var iconStyle = window.getComputedStyle(testIcon)
+          var isFontLoaded =
+            iconStyle.fontFamily.includes('Font Awesome') ||
+            iconStyle.fontFamily.includes('FontAwesome')
+
+          if (!isFontLoaded) {
+            console.log('字体图标未正确加载，加载备用方案')
+            // 加载备用CSS
+            var link = document.createElement('link')
+            link.rel = 'stylesheet'
+            link.href = '../static/download_style/css/font-awesome-4.7.0.min.css'
+            document.head.appendChild(link)
+          }
+
+          document.body.removeChild(testIcon)
+        }, 500)
+      })
+    </script>
+  </head>
+  <body>
+    {% if is_embed %}
+    <!-- 嵌入模式下不显示头部 -->
+    <div class="container">
+      {% else %}
+      <div class="container">
+        <h1 class="system-title">智能医疗诊断系统</h1>
+        <p class="system-subtitle">上传医学影像，获取专业诊断结果</p>
+        {% if patient_id %}
+        <div class="layui-alert layui-alert-normal" style="margin-bottom: 15px">
+          <i class="layui-icon layui-icon-link"></i>
+          当前诊断将关联到患者ID: {{ patient_id }}
+        </div>
+        {% endif %} {% endif %}
+
+        <!-- 文件上传部分开始 -->
+        <div class="layui-card upload-section">
+          <div class="layui-card-header">上传 MRI 图像 (.nii 或 .nii.gz 格式)</div>
+          <div class="layui-card-body">
+            <form class="layui-form" enctype="multipart/form-data" id="uploadForm">
+              <div class="layui-form-item">
+                <div
+                  class="layui-alert layui-alert-warning"
+                  style="
+                    margin-bottom: 15px;
+                    padding: 10px;
+                    border-radius: 4px;
+                    background-color: #fff9e6;
+                    border-left: 5px solid #fbbc05;
+                  "
+                >
+                  <i
+                    class="layui-icon layui-icon-tips"
+                    style="color: #fbbc05; margin-right: 8px"
+                  ></i>
+                  <span style="font-size: 13px"
+                    >请注意：系统只接受 <strong>.nii</strong> 或
+                    <strong>.nii.gz</strong> 格式的医学影像文件</span
+                  >
+                </div>
+              </div>
+              <div class="layui-upload">
+                <!-- 器官选择按钮组 -->
+                <div class="layui-form-item">
+                  <label class="layui-form-label">选择器官</label>
+                  <div class="layui-input-block">
+                    <div class="organ-buttons">
+                      <button
+                        class="layui-btn layui-btn-primary"
+                        data-organ="brain"
+                        data-task="1"
+                        type="button"
+                      >
+                        大脑
+                      </button>
+                      <button
+                        class="layui-btn layui-btn-primary"
+                        data-organ="liver"
+                        data-task="3"
+                        type="button"
+                      >
+                        肝脏
+                      </button>
+                      <button
+                        class="layui-btn layui-btn-primary"
+                        data-organ="lung"
+                        data-task="6"
+                        type="button"
+                      >
+                        肺脏
+                      </button>
+                      <button
+                        class="layui-btn layui-btn-primary"
+                        data-organ="kidney"
+                        data-task="40"
+                        type="button"
+                      >
+                        肾脏
+                      </button>
+                      <button
+                        class="layui-btn layui-btn-primary"
+                        data-organ="pancreas"
+                        data-task="7"
+                        type="button"
+                      >
+                        胰腺
+                      </button>
+                      <button
+                        class="layui-btn layui-btn-primary"
+                        data-organ="hippocampus"
+                        data-task="4"
+                        type="button"
+                      >
+                        海马体
+                      </button>
+                      <button
+                        class="layui-btn layui-btn-primary"
+                        data-organ="intestine"
+                        data-task="10"
+                        type="button"
+                      >
+                        肠道
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <!-- 文件上传按钮 -->
+                <div class="layui-form-item">
+                  <label class="layui-form-label">上传文件</label>
+                  <div class="layui-input-block">
+                    <button class="layui-btn" id="demoBtn" type="button">使用示例图像</button>
+                    <button class="layui-btn layui-btn-normal" id="uploadBtn" type="button">
+                      上传文件
+                    </button>
+                    <input id="fileInput" name="file" style="display: none" type="file" />
+                    <div class="layui-form-mid layui-word-aux" id="fileNameDisplay"></div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <!-- 预测结果显示部分 -->
+        <div class="result-section" id="resultSection" style="display: none">
+          <div class="layui-card">
+            <div class="layui-card-header">诊断结果</div>
+            <div class="layui-card-body">
+              <div class="diagnosis-result" id="resultText"></div>
+              <div class="img-shape-info" id="imgShape"></div>
+            </div>
+          </div>
+        </div>
+        <!-- MRI 切片查看部分 -->
+        <div class="slice-section" id="sliceSection" style="display: none">
+          <div class="layui-card">
+            <div class="layui-card-header">查看 MRI 切片</div>
+            <div class="layui-card-body">
+              <form class="layui-form" id="sliceForm">
+                <div class="layui-form-item">
+                  <label class="layui-form-label">视角选择</label>
+                  <div class="layui-input-block">
+                    <input checked="" name="dim" title="X轴" type="radio" value="0" />
+                    <input name="dim" title="Y轴" type="radio" value="1" />
+                    <input name="dim" title="Z轴" type="radio" value="2" />
+                  </div>
+                </div>
+                <div class="layui-form-item">
+                  <label class="layui-form-label">层数选择</label>
+                  <div class="layui-input-block slice-slider-control">
+                    <input
+                      class="slice-slider"
+                      id="sliceSlider"
+                      max="100"
+                      min="0"
+                      type="range"
+                      value="50"
+                    />
+                    <div class="slice-index-display">
+                      <span id="currentSliceIndex">50</span> / <span id="totalSliceCount">100</span>
+                    </div>
+                    <input id="sliceIndex" name="sliceIndex" type="hidden" value="50" />
+                  </div>
+                </div>
+              </form>
+              <!-- 切片图像显示区域 -->
+              <div class="slice-display" id="sliceImageContainer">
+                <div class="layui-text tip-text">选择视角和层数以查看切片</div>
+              </div>
+              <!-- 切片控制按钮 -->
+              <div class="slice-action-buttons">
+                <button class="layui-btn" id="saveSliceBtn" type="button">保存当前切片</button>
+                <button class="layui-btn layui-btn-warm" id="generateReportBtn" type="button">
+                  生成报告
+                </button>
+              </div>
+              <!-- 已保存切片区域 -->
+              <div id="savedSlicesContainer" style="margin-top: 24px; display: none">
+                <h4>已保存切片</h4>
+                <div id="savedSlicesGrid"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 加载遮罩 -->
+      <div class="loading-overlay" style="display: none">
+        <div class="spinner"></div>
+        <div class="loading-text">正在处理中，请稍候...</div>
+      </div>
+      <!-- 在嵌入模式下，添加调试信息 -->
+      {% if is_embed %}
+      <div
+        id="debugInfo"
+        style="
+          display: none;
+          padding: 10px;
+          background: #f0f0f0;
+          margin-top: 20px;
+          border-radius: 4px;
+        "
+      >
+        <h3>调试信息</h3>
+        <pre id="debugText"></pre>
+      </div>
+      <script>
+        // 调试函数
+        function logDebug(message) {
+          console.log(message)
+          const debugElement = document.getElementById('debugText')
+          if (debugElement) {
+            debugElement.textContent += message + '\n'
+          }
+        }
+
+        // 嵌入模式初始化
+        window.addEventListener('DOMContentLoaded', function () {
+          logDebug('嵌入模式初始化')
+          logDebug('页面URL: ' + window.location.href)
+          logDebug('iframe模式: ' + (window.isEmbedded ? '是' : '否'))
+
+          // 通知父窗口已加载
+          if (window.isEmbedded) {
+            try {
+              // 延迟发送以确保父页面已准备好接收消息
+              setTimeout(() => {
+                window.parent.postMessage('predict-module-ready', '*')
+                logDebug('已向父窗口发送加载通知')
+              }, 500)
+            } catch (e) {
+              logDebug('向父窗口发送消息失败: ' + e.message)
+            }
+          }
+        })
+      </script>
+      {% endif %}
+
+      <script src="{{ url_for('static', filename='js/predict.js') }}"></script>
+    </div>
+  </body>
+</html>

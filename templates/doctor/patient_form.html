@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>{{ '添加' if action=='add' else '编辑' }}患者</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css" rel="stylesheet">
+    <!-- Font Awesome 4.7 CDN（如有兼容需求） -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            color: #212529;
+        }
+
+        h3, h5 {
+            font-weight: 500;
+            color: #343a40;
+        }
+
+        .card {
+            border: 1px solid #dee2e6;
+            border-radius: 0.75rem;
+            box-shadow: none;
+        }
+
+        .card-header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #dee2e6;
+            padding: 1rem 1.25rem;
+        }
+
+        .form-control, .form-select {
+            border-radius: 0.5rem;
+            border-color: #ced4da;
+            box-shadow: none;
+            transition: border-color 0.2s ease-in-out;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #495057;
+            box-shadow: none;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .btn-primary {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            border-radius: 0.5rem;
+        }
+
+        .btn-secondary {
+            border-radius: 0.5rem;
+        }
+
+        .btn:focus {
+            box-shadow: none;
+        }
+
+        .text-center {
+            margin-top: 2rem;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+        }
+
+        /* 表单验证提示样式 */
+        .was-validated .form-control:invalid,
+        .was-validated .form-select:invalid {
+            border-color: #dc3545;
+        }
+
+        .was-validated .form-control:valid,
+        .was-validated .form-select:valid {
+            border-color: #198754;
+        }
+    </style>
+
+    <!-- 字体图标备用方案 -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 检查字体图标是否正确加载
+        setTimeout(function() {
+            var testIcon = document.createElement('i');
+            testIcon.className = 'fas fa-user';
+            testIcon.style.visibility = 'hidden';
+            document.body.appendChild(testIcon);
+            
+            var iconStyle = window.getComputedStyle(testIcon);
+            var isFontLoaded = iconStyle.fontFamily.includes('Font Awesome') || 
+                               iconStyle.fontFamily.includes('FontAwesome');
+            
+            if (!isFontLoaded) {
+                console.log('字体图标未正确加载，加载备用方案');
+                // 加载备用CSS
+                var link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = '../static/download_style/css/font-awesome-4.7.0.min.css';
+                document.head.appendChild(link);
+            }
+            
+            document.body.removeChild(testIcon);
+        }, 500);
+    });
+    </script>
+    </head>
+<body>
+<div class="container mt-5">
+    <h3>{{ '添加' if action=='add' else '编辑' }}患者</h3>
+    <form action="#" class="needs-validation" id="patientForm" method="post" novalidate="">
+        <div class="row">
+            <!-- 基本信息 -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">基本信息</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label" for="name">姓名</label>
+                            <input class="form-control" id="name" name="name" required="" type="text"
+                                   value="{{ patient.name if patient else '' }}"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="age">年龄</label>
+                            <input class="form-control" id="age" name="age" required="" type="number"
+                                   value="{{ patient.age if patient else '' }}"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="gender">性别</label>
+                            <select class="form-select" id="gender" name="gender" required="">
+                                <option value="男" {% if patient and patient.gender == '男' %}selected{% endif %}>男</option>
+                                <option value="女" {% if patient and patient.gender == '女' %}selected{% endif %}>女</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="id_card">身份证号</label>
+                            <input class="form-control" id="id_card" name="id_card" required="" type="text"
+                                   value="{{ user.id_card if user else '' }}"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="blood_type">血型</label>
+                            <select class="form-select" id="blood_type" name="blood_type">
+                                <option value="">请选择</option>
+                                <option value="A" {% if patient and patient.blood_type == 'A' %}selected{% endif %}>A型</option>
+                                <option value="B" {% if patient and patient.blood_type == 'B' %}selected{% endif %}>B型</option>
+                                <option value="AB" {% if patient and patient.blood_type == 'AB' %}selected{% endif %}>AB型</option>
+                                <option value="O" {% if patient and patient.blood_type == 'O' %}selected{% endif %}>O型</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 联系信息 -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">联系信息</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label" for="contact_info">联系电话</label>
+                            <input class="form-control" id="contact_info" name="contact_info" required="" type="tel"
+                                   value="{{ patient.contact_info if patient else '' }}"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="address">地址</label>
+                            <input class="form-control" id="address" name="address" required="" type="text"
+                                   value="{{ patient.address if patient else '' }}"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="emergency_contact">紧急联系人</label>
+                            <input class="form-control" id="emergency_contact" name="emergency_contact" type="text"
+                                   value="{{ patient.emergency_contact if patient else '' }}"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 病史信息 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">病史信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label" for="allergy_info">过敏史</label>
+                    <textarea class="form-control" id="allergy_info" name="allergy_info" rows="2">{{ medical_history.allergy_info if medical_history else '' }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="family_history">家族病史</label>
+                    <textarea class="form-control" id="family_history" name="family_history" rows="2">{{ medical_history.family_history if medical_history else '' }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="previous_head_injuries">既往头部创伤史</label>
+                    <textarea class="form-control" id="previous_head_injuries" name="previous_head_injuries" rows="2">{{ medical_history.previous_head_injuries if medical_history else '' }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="neurological_conditions">神经系统疾病史</label>
+                    <textarea class="form-control" id="neurological_conditions" name="neurological_conditions" rows="2">{{ medical_history.neurological_conditions if medical_history else '' }}</textarea>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            <button class="btn btn-primary" type="submit">保存</button>
+            <a class="btn btn-secondary ms-2" href="{{ url_for('patient_list') }}">返回</a>
+        </div>
+    </form>
+</div>
+<!-- 添加表单验证脚本 -->
+<script>
+    // 表单验证
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+
+    document.getElementById('patientForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+
+        // 根据当前操作确定URL
+        const action = '{{ action }}';
+        let url;
+
+        if (action === 'edit') {
+            url = '/patients/{{ patient.patient_id if patient else "" }}/edit';
+        } else {
+            url = '/patients/add';
+        }
+
+        fetch(url, {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Swal.fire({
+                        title: '成功',
+                        text: data.message,
+                        icon: 'success',
+                        confirmButtonText: '确定'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = data.redirect;
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        title: '错误',
+                        text: data.message,
+                        icon: 'error',
+                        confirmButtonText: '确定'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    title: '错误',
+                    text: '提交表单时发生错误',
+                    icon: 'error',
+                    confirmButtonText: '确定'
+                });
+            });
+    });
+</script>
+</body>
+</html>

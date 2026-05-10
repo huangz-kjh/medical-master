@@ -1,0 +1,316 @@
+{% extends "iframe_base.html" %} {% block head %}
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>预约管理 - 医生工作台</title>
+
+<!-- 使用本地Font Awesome，替换CDN -->
+<link href="{{ url_for('static', filename='download_style/css/all.min.css') }}" rel="stylesheet" />
+
+<!-- FullCalendar JS (本地) - 使用单一文件包含所有功能 -->
+<script src="{{ url_for('static', filename='fullcalendar-6.1.17/dist/index.global.min.js') }}"></script>
+<script src="{{ url_for('static', filename='fullcalendar-6.1.17/packages/core/locales/zh-cn.global.min.js') }}"></script>
+
+<!-- 页面专属CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/doctor_appointment.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/layuimini.css') }}" />
+
+<!-- 内联样式，修复特定问题 -->
+<style>
+  /* 添加一些视觉提示和修复 */
+  .layui-table-cell {
+    /* 防止过长的症状描述破坏布局 */
+    word-wrap: break-word;
+    word-break: break-all;
+  }
+  .pending-row {
+    background-color: #fffbe6 !important;
+  }
+  .confirmed-row {
+    background-color: #f0f9eb !important;
+  }
+  /* ... 其他您可能需要的内联样式 ... */
+
+  /* 创建预约弹窗内搜索结果的样式 */
+  .search-result-header {
+    padding: 8px 12px;
+    background-color: #f2f2f2;
+    font-weight: bold;
+    border-bottom: 1px solid #e6e6e6;
+    color: #333;
+  }
+  .patient-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+  }
+  .patient-item:last-child {
+    border-bottom: none;
+  }
+  .patient-item:hover {
+    background-color: #f5f7fa;
+  }
+  .patient-name {
+    font-weight: bold;
+    color: #1a1a1a;
+  }
+  .patient-age {
+    font-weight: normal;
+    color: #666;
+    margin-left: 8px;
+  }
+  .gender-male {
+    color: #1e90ff; /* 蓝色 */
+    margin-left: 5px;
+  }
+  .gender-female {
+    color: #ff69b4; /* 粉色 */
+    margin-left: 5px;
+  }
+  .patient-contact {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+  }
+  .search-result-empty,
+  .search-result-loading,
+  .search-result-error {
+    padding: 20px;
+    text-align: center;
+    color: #999;
+  }
+  .search-result-error {
+    color: #ff5722;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-card-body">
+      <!-- 顶部操作和筛选 -->
+      <div class="layui-form layui-row layui-col-space10" style="margin-bottom: 15px">
+        <div class="layui-col-md3">
+          <button class="layui-btn layui-btn-normal" id="createAppointmentBtn">
+            <i class="layui-icon">&#xe654;</i> 创建新预约
+          </button>
+        </div>
+        <div class="layui-col-md3">
+          <input
+            type="text"
+            id="appointmentSearch"
+            placeholder="搜索患者姓名..."
+            class="layui-input"
+          />
+        </div>
+        <div class="layui-col-md2">
+          <select id="statusFilter" lay-filter="statusFilter">
+            <option value="">所有状态</option>
+            <option value="pending">待确认</option>
+            <option value="confirmed">已确认</option>
+            <option value="completed">已完成</option>
+            <option value="cancelled">已取消</option>
+            <option value="rejected">已拒绝</option>
+          </select>
+        </div>
+        <div class="layui-col-md3">
+          <input type="text" class="layui-input" id="dateRangeFilter" placeholder="选择日期范围" />
+        </div>
+        <div class.layui-col-md1>
+          <button class="layui-btn" id="searchBtn">搜索</button>
+        </div>
+      </div>
+
+      <!-- Tab标签页 -->
+      <div class="layui-tab layui-tab-brief" lay-filter="appointmentTabs">
+        <ul class="layui-tab-title">
+          <li class="layui-this" data-key="all">全部预约</li>
+          <li data-key="pending">待处理</li>
+          <li data-key="confirmed">已确认</li>
+          <li data-key="calendar">日历视图</li>
+        </ul>
+        <div class="layui-tab-content">
+          <!-- 全部预约 -->
+          <div class="layui-tab-item layui-show" data-key="all">
+            <table class="layui-table">
+              <thead>
+                <tr>
+                  <th>患者</th>
+                  <th>预约类型</th>
+                  <th>预约日期</th>
+                  <th>时间段</th>
+                  <th>状态</th>
+                  <th>申请时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="allTableBody">
+                <!-- Skeleton Loader -->
+                {% for _ in range(5) %}
+                <tr>
+                  <td><div class="skeleton-loader" style="width: 80px"></div></td>
+                  <td><div class="skeleton-loader" style="width: 60px"></div></td>
+                  <td><div class="skeleton-loader" style="width: 100px"></div></td>
+                  <td><div class="skeleton-loader" style="width: 70px"></div></td>
+                  <td><div class="skeleton-loader" style="width: 50px"></div></td>
+                  <td><div class="skeleton-loader" style="width: 120px"></div></td>
+                  <td><div class="skeleton-loader" style="width: 100px"></div></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <div id="allPagination" class="pagination-container"></div>
+          </div>
+          <!-- 待处理 -->
+          <div class="layui-tab-item" data-key="pending">
+            <table class="layui-table">
+              <thead>
+                <tr>
+                  <th>患者</th>
+                  <th>预约类型</th>
+                  <th>预约日期</th>
+                  <th>时间段</th>
+                  <th>状态</th>
+                  <th>申请时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="pendingTableBody">
+                <!-- Skeleton Loader -->
+                {% for _ in range(5) %}
+                <tr>
+                  <td><div class="skeleton-loader" style="width: 80px"></div></td>
+                  <td><div class="skeleton-loader" style="width: 60px"></div></td>
+                  <td><div class="skeleton-loader" style="width: 100px"></div></td>
+                  <td><div class="skeleton-loader" style="width: 70px"></div></td>
+                  <td><div class="skeleton-loader" style="width: 50px"></div></td>
+                  <td><div class="skeleton-loader" style="width: 120px"></div></td>
+                  <td><div class="skeleton-loader" style="width: 100px"></div></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <div id="pendingPagination" class="pagination-container"></div>
+          </div>
+          <!-- 已确认 -->
+          <div class="layui-tab-item" data-key="confirmed">
+            <table class="layui-table">
+              <thead>
+                <tr>
+                  <th>患者</th>
+                  <th>预约类型</th>
+                  <th>预约日期</th>
+                  <th>时间段</th>
+                  <th>状态</th>
+                  <th>申请时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="confirmedTableBody">
+                <!-- Skeleton Loader -->
+                {% for _ in range(5) %}
+                <tr>
+                  <td><div class="skeleton-loader" style="width: 80px"></div></td>
+                  <td><div class="skeleton-loader" style="width: 60px"></div></td>
+                  <td><div class="skeleton-loader" style="width: 100px"></div></td>
+                  <td><div class="skeleton-loader" style="width: 70px"></div></td>
+                  <td><div class="skeleton-loader" style="width: 50px"></div></td>
+                  <td><div class="skeleton-loader" style="width: 120px"></div></td>
+                  <td><div class="skeleton-loader" style="width: 100px"></div></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <div id="confirmedPagination" class="pagination-container"></div>
+          </div>
+          <!-- 日历视图 -->
+          <div class="layui-tab-item" data-key="calendar">
+            <div id="appointmentCalendar">
+              <!-- Calendar Skeleton Loader -->
+              <div class="skeleton-row">
+                <span
+                  class="skeleton-loader"
+                  style="width: 100%; height: 500px; display: block"
+                ></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<!-- 确保Layui和jQuery可用 -->
+<script>
+  // 检查依赖是否已加载
+  window.addEventListener('load', function () {
+    if (typeof $ === 'undefined') {
+      console.error('jQuery未能加载！')
+    }
+    if (typeof FullCalendar === 'undefined') {
+      console.error('FullCalendar未能加载！')
+    }
+  })
+</script>
+
+<!-- 页面专属逻辑 -->
+<script src="{{ url_for('static', filename='js/doctor_appointments.js') }}"></script>
+
+<!-- 初始化脚本 -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (typeof layui === 'undefined') {
+      console.error('Layui未能加载!')
+      document.body.innerHTML =
+        '<div style="text-align: center; padding: 50px; color: red;">页面核心组件加载失败，请刷新或联系管理员。</div>'
+    } else {
+      layui.use(['form', 'laydate', 'element', 'layer'], function () {
+        // 将Layui模块暴露到全局作用域，以供主脚本使用
+        window.layui_form = layui.form
+        window.layui_laydate = layui.laydate
+        window.layui_element = layui.element
+        window.layui_layer = layui.layer
+
+        if (typeof window.initPage === 'function') {
+          window.initPage()
+        } else {
+          console.error('initPage函数未定义，请检查doctor_appointments.js是否正确加载。')
+        }
+      })
+    }
+  })
+</script>
+{% endblock %} {% block styles %}
+<style>
+  .pagination-container {
+    text-align: right;
+    margin-top: 15px;
+  }
+  .skeleton-loader {
+    display: inline-block;
+    height: 20px;
+    position: relative;
+    overflow: hidden;
+    background-color: #e2e2e2;
+    border-radius: 4px;
+  }
+  .skeleton-loader::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #e2e2e2, #f0f0f0, #e2e2e2);
+    animation: skeleton-animation 1.5s infinite;
+  }
+
+  @keyframes skeleton-animation {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>医生预约辅助函数</title>
+
+    <!-- 字体图标备用方案 -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // 检查字体图标是否正确加载
+        setTimeout(function () {
+          var testIcon = document.createElement('i')
+          testIcon.className = 'fas fa-user'
+          testIcon.style.visibility = 'hidden'
+          document.body.appendChild(testIcon)
+
+          var iconStyle = window.getComputedStyle(testIcon)
+          var isFontLoaded =
+            iconStyle.fontFamily.includes('Font Awesome') ||
+            iconStyle.fontFamily.includes('FontAwesome')
+
+          if (!isFontLoaded) {
+            console.log('字体图标未正确加载，加载备用方案')
+            // 加载备用CSS
+            var link = document.createElement('link')
+            link.rel = 'stylesheet'
+            link.href = '../static/download_style/css/font-awesome-4.7.0.min.css'
+            document.head.appendChild(link)
+          }
+
+          document.body.removeChild(testIcon)
+        }, 500)
+      })
+    </script>
+  </head>
+  <body>
+    <!-- 此文件包含医生预约页面所需的JavaScript函数 -->
+    <script>
+      // 确认预约函数
+      function confirmAppointment(appointmentId) {
+        // 确认预约逻辑
+        console.log('确认预约: ' + appointmentId)
+        // 发送AJAX请求到确认API
+        fetch(`/api/appointments/${appointmentId}/confirm`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message: '' }),
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.status === 'success') {
+              alert(data.message || '预约已确认')
+              // 刷新页面
+              window.location.reload()
+            } else {
+              alert(data.message || '确认预约失败')
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error)
+            alert('确认预约时发生错误，请稍后重试')
+          })
+      }
+
+      // 拒绝预约函数
+      function rejectAppointment(appointmentId) {
+        // 获取拒绝原因
+        const reason = prompt('请输入拒绝原因:')
+        if (reason === null) {
+          // 用户取消了输入
+          return
+        }
+
+        // 发送AJAX请求到拒绝API
+        fetch(`/api/appointments/${appointmentId}/reject`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ reason: reason }),
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.status === 'success') {
+              alert(data.message || '预约已拒绝')
+              // 刷新页面
+              window.location.reload()
+            } else {
+              alert(data.message || '拒绝预约失败')
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error)
+            alert('拒绝预约时发生错误，请稍后重试')
+          })
+      }
+    </script>
+  </body>
+</html>

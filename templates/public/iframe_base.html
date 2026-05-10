@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>{% block title %}医学影像工作台{% endblock %}</title>
+
+    <!-- 确保页面在各浏览器中正确渲染 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+    <!-- 关键CSS优先加载 -->
+    <link
+      href="{{ url_for('static', filename='download_style/css/layui.min.css') }}"
+      rel="stylesheet"
+    />
+    <link href="{{ url_for('static', filename='css/common.css') }}" rel="stylesheet" />
+
+    <!-- 延迟加载非关键CSS -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='download_style/css/all.min.css') }}"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='download_style/css/all.min.css') }}"
+      />
+    </noscript>
+
+    <!-- 子模板可以在此处添加自己的头部内容 -->
+    {% block head %}{% endblock %}
+
+    <style>
+      /* iframe内容基础样式 - 内联以确保优先加载 */
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        width: 100%;
+        font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+        background-color: #f4f8fb;
+      }
+
+      .iframe-content {
+        width: 95%; /* 设置一个比100%稍小的宽度 */
+        margin: 0 auto; /* 水平居中 */
+        padding: 15px; /* 增加内边距 */
+        box-sizing: border-box; /* 确保内边距不会增加总宽度 */
+        min-height: 100%;
+      }
+
+      /* 添加CSS修复，解决布局问题 */
+      * {
+        box-sizing: border-box;
+      }
+
+      /* 确保图标正常显示 */
+      .fas,
+      .far,
+      .fab,
+      .fa {
+        display: inline-block;
+        font-style: normal;
+        font-variant: normal;
+        text-rendering: auto;
+        line-height: 1;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* 添加页面加载指示器 */
+      .resources-loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        text-align: center;
+        background-color: #fff3cd;
+        color: #856404;
+        padding: 5px;
+        font-size: 12px;
+        z-index: 9999;
+        display: none;
+      }
+    </style>
+
+    <!-- 预加载核心JS，但延迟执行 -->
+    <link
+      rel="preload"
+      href="{{ url_for('static', filename='download_style/js/jquery.min.js') }}"
+      as="script"
+    />
+    <link
+      rel="preload"
+      href="{{ url_for('static', filename='download_style/layui.min.js') }}"
+      as="script"
+    />
+  </head>
+  <body>
+    <!-- 资源加载提示 -->
+    <div class="resources-loading" id="loadingIndicator">资源正在加载中...</div>
+
+    <div class="iframe-content">
+      {% block content %}
+      <!-- 在继承此模板的页面中替换此块 -->
+      {% endblock %}
+    </div>
+
+    <!-- 基础JS组件 - 放在页面底部提高加载性能 -->
+    <script src="{{ url_for('static', filename='download_style/js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='download_style/layui.min.js') }}"></script>
+
+    <script>
+      // 资源加载监控
+      document.addEventListener('DOMContentLoaded', function () {
+        var loadingIndicator = document.getElementById('loadingIndicator')
+
+        // 检查关键依赖是否已加载
+        var checkResources = function () {
+          var missingResources = []
+          if (typeof jQuery === 'undefined') missingResources.push('jQuery')
+          if (typeof layui === 'undefined') missingResources.push('LayUI')
+
+          if (missingResources.length > 0) {
+            loadingIndicator.innerHTML = '资源加载失败: ' + missingResources.join(', ')
+            loadingIndicator.style.display = 'block'
+            loadingIndicator.style.backgroundColor = '#F8D7DA'
+            loadingIndicator.style.color = '#721C24'
+            return false
+          }
+          return true
+        }
+
+        // 执行一次初始检查
+        if (!checkResources()) {
+          console.error('页面核心资源加载失败')
+        }
+
+        // 设置移除加载指示器的超时
+        setTimeout(function () {
+          if (loadingIndicator.style.display === 'block') {
+            // 还在显示，说明确实有问题
+            console.error('资源加载超时，页面可能无法正常工作')
+          }
+        }, 5000)
+      })
+    </script>
+
+    <!-- 页面特定的JavaScript -->
+    {% block scripts %}
+    <!-- 在继承此模板的页面中添加特定的脚本 -->
+    {% endblock %}
+  </body>
+</html>

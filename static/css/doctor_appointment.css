@@ -1,0 +1,995 @@
+/* Custom styles for the doctor appointment management page */
+
+.layui-fluid {
+  padding: 0;
+  margin: 0 15px;
+}
+
+.pagination-container {
+  text-align: right;
+  margin-top: 20px;
+  margin-right: 15px;
+}
+
+/* 全局样式 */
+body,
+html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Microsoft YaHei', sans-serif;
+}
+
+/* 添加样式修复 */
+.fc-daygrid-event {
+  white-space: normal !important;
+  align-items: normal !important;
+}
+
+.fc-event-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 医生预约容器样式 */
+.doctor-appointment-container {
+  padding: 15px;
+  background-color: #f8f8f8;
+  min-height: calc(100vh - 30px);
+}
+
+/* 统计卡片样式 */
+.appointment-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  flex: 1;
+  min-width: 200px;
+  margin: 0 10px 10px 0;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+}
+
+.stat-icon {
+  width: 60px;
+  height: 60px;
+  background-color: #f2f2f2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  font-size: 28px;
+  color: #1e9fff;
+}
+
+.stat-content h4 {
+  margin: 0;
+  color: #666;
+  font-size: 16px;
+  font-weight: normal;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+  margin-top: 5px;
+}
+
+/* 操作栏样式 */
+.action-bar {
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* 表格样式优化 */
+.layui-table {
+  border: 1px solid #f2f2f2; /* 更柔和的边框 */
+  border-collapse: separate; /* 允许圆角 */
+  border-spacing: 0;
+}
+
+.layui-table thead th {
+  background-color: #fafafa; /* 浅灰色表头 */
+  color: #333;
+  font-weight: 600;
+  border-bottom: 2px solid #e8e8e8;
+  padding: 12px 15px;
+}
+
+.layui-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.layui-table tbody tr:hover {
+  background-color: #f5f7fa; /* 鼠标悬停效果 */
+}
+
+.layui-table td {
+  padding: 12px 15px; /* 增加单元格内边距 */
+  border: none;
+  border-bottom: 1px solid #f2f2f2; /* 只保留水平分割线 */
+}
+
+/* 移除最后一个tr的下边框 */
+.layui-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.symptoms-cell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 表格行样式 */
+.pending-row {
+  background-color: #fff9e6 !important; /* 淡黄色突出显示待确认预约 */
+}
+
+.confirmed-row {
+  background-color: #f0f9ff !important; /* 淡蓝色突出显示已确认预约 */
+}
+
+/* 日历容器样式 */
+/* 日历容器样式优化 */
+.calendar-card-body {
+  padding: 15px;
+  position: relative;
+  min-height: 500px;
+  overflow: hidden;
+}
+
+.calendar-container {
+  height: auto;
+  min-height: 500px;
+  max-height: 600px;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: auto;
+}
+
+/* 调整日历导航栏样式 */
+.calendar-navigation {
+  margin: 0 0 10px 0;
+  padding: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* 调整FullCalendar的样式 */
+.fc {
+  height: 100% !important;
+  max-height: 580px;
+}
+
+.fc .fc-toolbar {
+  margin-bottom: 0.5em !important;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.2em !important;
+}
+
+.fc .fc-daygrid-day-frame {
+  min-height: 70px;
+  height: auto !important;
+  border: 1px solid #e6e6e6;
+  background-color: #fff;
+}
+
+.fc .fc-daygrid-day-top {
+  padding: 3px 5px !important;
+}
+
+.fc .fc-daygrid-day-events {
+  padding: 1px !important;
+}
+
+.fc-event {
+  padding: 2px 4px !important;
+  margin-bottom: 2px !important;
+  font-size: 12px !important;
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 768px) {
+  .calendar-container {
+    min-height: 400px;
+  }
+
+  .fc .fc-daygrid-day-frame {
+    min-height: 50px;
+  }
+
+  .calendar-navigation {
+    flex-wrap: wrap;
+  }
+
+  .calendar-navigation button {
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+  }
+
+  #currentMonthDisplay {
+    order: -1;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 5px !important;
+  }
+}
+
+/* 患者搜索相关样式 */
+.patient-search-results {
+  position: absolute;
+  width: 100%;
+  max-height: 250px;
+  overflow-y: auto;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  display: none;
+  margin-top: -1px;
+}
+
+.patient-item {
+  padding: 12px 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #f2f2f2;
+  font-size: 14px;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+}
+
+.patient-item .patient-name {
+  font-weight: bold;
+  color: #333;
+}
+
+.patient-item .patient-info {
+  color: #999;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.patient-item:last-child {
+  border-bottom: none;
+}
+
+.patient-item:hover,
+.patient-item.hover {
+  background-color: #f8f8f8;
+  color: #1e9fff;
+}
+
+.patient-item.no-result {
+  color: #999;
+  font-style: italic;
+  cursor: default;
+  text-align: center;
+  padding: 15px;
+}
+
+.patient-item.no-result:hover {
+  background-color: #fff;
+  color: #999;
+}
+
+/* 美化搜索框样式 */
+#patientSearch {
+  padding-right: 30px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+}
+
+/* 搜索结果滚动条美化 */
+.patient-search-results::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.patient-search-results::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 3px;
+}
+
+.patient-search-results::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 3px;
+}
+
+.patient-search-results::-webkit-scrollbar-thumb:hover {
+  background: #ccc;
+}
+
+/* 预约详情样式 */
+.appointment-details {
+  padding: 25px;
+}
+
+.details-item {
+  margin-bottom: 20px;
+  line-height: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 1px dashed #eee;
+  padding-bottom: 15px;
+}
+
+.details-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.details-label {
+  font-weight: bold;
+  color: #666;
+  display: inline-block;
+  width: 130px;
+  margin-right: 15px;
+  text-align: right;
+}
+
+.details-value {
+  color: #333;
+  flex: 1;
+  min-width: 250px;
+  font-size: 15px;
+}
+
+/* 隐藏原始弹窗 */
+.template-dialog {
+  display: none;
+}
+
+/* 按钮样式优化 */
+.layui-btn {
+  transition: all 0.3s;
+}
+
+.layui-btn:hover {
+  opacity: 0.85;
+}
+
+/* 表单样式优化 */
+.layui-form-item {
+  margin-bottom: 20px !important;
+}
+
+.layui-input,
+.layui-textarea,
+.layui-select {
+  border-radius: 2px;
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 768px) {
+  .appointment-stats {
+    flex-direction: column;
+  }
+
+  .stat-card {
+    width: calc(100% - 20px);
+    margin: 0 0 10px 0;
+  }
+
+  .layui-layer {
+    width: 95% !important;
+  }
+
+  .details-label {
+    width: 100px;
+  }
+}
+
+/* 导航快捷链接样式 */
+.quick-actions {
+  margin-bottom: 15px;
+  background: #fff;
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.quick-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.quick-links li {
+  margin-right: 20px;
+  margin-bottom: 5px;
+}
+
+.quick-links a {
+  color: #333;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.quick-links a i {
+  margin-right: 5px;
+  color: #1e9fff;
+}
+
+/* 操作栏布局 */
+.action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.left-actions,
+.right-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 分页样式 */
+.pagination-container {
+  margin-top: 15px;
+  text-align: center;
+}
+
+/* layui样式覆盖 */
+.layui-layer-setwin .layui-layer-close1 {
+  font-size: 0;
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  width: 30px;
+  height: 30px;
+  margin-left: 0;
+  background-position: center;
+}
+
+/* 确保弹出层样式正确 */
+body .layui-layer-dialog {
+  min-width: 300px;
+}
+
+/* 弹出层内容样式 */
+.layer-content-wrapper {
+  padding: 20px;
+}
+
+.layui-form-label {
+  width: 100px;
+}
+
+.layui-input-block {
+  margin-left: 130px;
+}
+
+/* 全局弹窗样式优化 */
+.layui-layer {
+  border-radius: 6px !important;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.layui-layer-title {
+  background-color: #f8f8f8 !important;
+  padding: 0 80px 0 20px !important;
+  height: 50px !important;
+  line-height: 50px !important;
+  border-bottom: 1px solid #eee !important;
+  font-size: 16px !important;
+  color: #333 !important;
+  font-weight: bold !important;
+  border-radius: 6px 6px 0 0 !important;
+}
+
+.layui-layer-setwin {
+  top: 17px !important;
+  right: 15px !important;
+}
+
+.layui-layer-setwin .layui-layer-close1 {
+  background-position: 1px -40px !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.layui-layer-btn {
+  padding: 10px 15px 15px !important;
+  text-align: right !important;
+  border-top: 1px solid #f0f0f0 !important;
+}
+
+.layui-layer-btn a {
+  height: 36px !important;
+  line-height: 36px !important;
+  padding: 0 20px !important;
+  border-radius: 4px !important;
+  font-size: 14px !important;
+  transition: all 0.3s !important;
+}
+
+.layui-layer-btn .layui-layer-btn0 {
+  background-color: #1e9fff !important;
+  color: #fff !important;
+  border-color: #1e9fff !important;
+}
+
+.layui-layer-btn .layui-layer-btn1 {
+  background-color: #f2f2f2 !important;
+  color: #333 !important;
+  border-color: #e6e6e6 !important;
+}
+
+/* 表单字段样式优化 */
+.layui-form-item .layui-form-label {
+  padding: 9px 15px !important;
+  width: 120px !important;
+  font-weight: bold !important;
+}
+
+.layui-form-item .layui-input-block {
+  margin-left: 150px !important;
+}
+
+.layui-input,
+.layui-textarea,
+.layui-select {
+  padding: 10px 15px !important;
+  height: 38px !important;
+  line-height: 1.5 !important;
+  border-radius: 4px !important;
+  border-color: #e6e6e6 !important;
+  transition: all 0.3s !important;
+}
+
+.layui-input:focus,
+.layui-textarea:focus {
+  border-color: #1e9fff !important;
+  box-shadow: 0 0 0 2px rgba(30, 159, 255, 0.1) !important;
+}
+
+.layui-textarea {
+  min-height: 80px !important;
+  height: auto !important;
+}
+
+.layui-form-checkbox {
+  margin-top: 8px !important;
+}
+
+.layer-content-wrapper {
+  padding: 25px !important;
+}
+
+/* 弹窗内容溢出时的滚动条样式 */
+.layui-layer-content::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.layui-layer-content::-webkit-scrollbar-thumb {
+  background-color: #c1c1c1;
+  border-radius: 4px;
+}
+
+.layui-layer-content::-webkit-scrollbar-track {
+  background-color: #f2f2f2;
+  border-radius: 4px;
+}
+
+/* 新增筛选区样式 */
+.filter-group {
+  margin-bottom: 15px;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+}
+
+.filter-item label {
+  font-weight: bold;
+  color: #666;
+  margin-right: 10px;
+  white-space: nowrap;
+}
+
+.filter-item .layui-input,
+.filter-item .layui-select {
+  border-radius: 4px;
+  border-color: #e6e6e6;
+  height: 36px;
+  line-height: 36px;
+  text-align: center;
+}
+
+/* 状态筛选下拉框居中样式 */
+.status-filter-select {
+  text-align: center;
+  text-align-last: center; /* Firefox支持 */
+}
+
+.status-filter-select option {
+  text-align: center;
+}
+
+/* 修复下拉箭头位置 */
+.layui-form-select .layui-edge {
+  right: 10px;
+}
+
+/* layui下拉框的样式覆盖 */
+.layui-form-select dl dd {
+  text-align: center;
+  padding: 0 10px;
+  line-height: 36px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.layui-form-select dl dd:hover {
+  background-color: #f2f2f2;
+}
+
+.layui-form-select dl dd.layui-this {
+  background-color: #1e9fff;
+  color: #fff;
+}
+
+.filter-item .layui-input:hover,
+.filter-item .layui-select:hover {
+  border-color: #d2d2d2;
+}
+
+.filter-item .layui-input:focus,
+.filter-item .layui-select:focus {
+  border-color: #1e9fff;
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 768px) {
+  .right-actions {
+    flex-direction: column;
+  }
+
+  .filter-group {
+    width: 100%;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+
+  .filter-item {
+    margin-bottom: 10px;
+    width: 100%;
+  }
+}
+
+/* 全局弹窗样式优化 */
+.layui-layer-dialog {
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.layui-layer-title {
+  background-color: #f8f8f8 !important;
+  height: 45px !important;
+  line-height: 45px !important;
+  font-size: 16px !important;
+  color: #333 !important;
+  border-bottom: 1px solid #eee !important;
+}
+
+.layui-layer-btn {
+  padding: 10px !important;
+  text-align: center !important;
+  background-color: #f8f8f8 !important;
+  border-top: 1px solid #eee !important;
+}
+
+.layui-layer-btn a {
+  height: 32px !important;
+  line-height: 32px !important;
+  padding: 0 15px !important;
+  border-radius: 3px !important;
+  font-size: 14px !important;
+  min-width: 80px !important;
+  transition: all 0.3s !important;
+}
+
+.layui-layer-btn .layui-layer-btn0 {
+  background-color: #1e9fff !important;
+  color: #fff !important;
+  border-color: #1e9fff !important;
+}
+
+.layui-layer-btn .layui-layer-btn1 {
+  background-color: #f2f2f2 !important;
+  color: #333 !important;
+  border-color: #e6e6e6 !important;
+}
+
+/* 表单字段样式优化 */
+.layui-form-item .layui-form-label {
+  padding: 9px 15px !important;
+  width: 120px !important;
+  font-weight: bold !important;
+}
+
+.layui-form-item .layui-input-block {
+  margin-left: 150px !important;
+}
+
+.layui-input,
+.layui-textarea,
+.layui-select {
+  padding: 10px 15px !important;
+  height: 38px !important;
+  line-height: 1.5 !important;
+  border-radius: 4px !important;
+  border-color: #e6e6e6 !important;
+  transition: all 0.3s !important;
+}
+
+.layui-input:focus,
+.layui-textarea:focus {
+  border-color: #1e9fff !important;
+  box-shadow: 0 0 0 2px rgba(30, 159, 255, 0.1) !important;
+}
+
+.layui-textarea {
+  min-height: 80px !important;
+  height: auto !important;
+}
+
+.layui-form-checkbox {
+  margin-top: 8px !important;
+}
+
+.layer-content-wrapper {
+  padding: 25px !important;
+}
+
+/* 弹窗内容溢出时的滚动条样式 */
+.layui-layer-content::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.layui-layer-content::-webkit-scrollbar-thumb {
+  background-color: #c1c1c1;
+  border-radius: 4px;
+}
+
+.layui-layer-content::-webkit-scrollbar-track {
+  background-color: #f2f2f2;
+  border-radius: 4px;
+}
+
+/* 新增筛选区样式 */
+.filter-group {
+  margin-bottom: 15px;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+}
+
+.filter-item label {
+  font-weight: bold;
+  color: #666;
+  margin-right: 10px;
+  white-space: nowrap;
+}
+
+.filter-item .layui-input,
+.filter-item .layui-select {
+  border-radius: 4px;
+  border-color: #e6e6e6;
+  height: 36px;
+  line-height: 36px;
+  text-align: center;
+}
+
+/* 状态筛选下拉框居中样式 */
+.status-filter-select {
+  text-align: center;
+  text-align-last: center; /* Firefox支持 */
+}
+
+.status-filter-select option {
+  text-align: center;
+}
+
+/* 修复下拉箭头位置 */
+.layui-form-select .layui-edge {
+  right: 10px;
+}
+
+/* layui下拉框的样式覆盖 */
+.layui-form-select dl dd {
+  text-align: center;
+  padding: 0 10px;
+  line-height: 36px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.layui-form-select dl dd:hover {
+  background-color: #f2f2f2;
+}
+
+.layui-form-select dl dd.layui-this {
+  background-color: #1e9fff;
+  color: #fff;
+}
+
+.filter-item .layui-input:hover,
+.filter-item .layui-select:hover {
+  border-color: #d2d2d2;
+}
+
+.filter-item .layui-input:focus,
+.filter-item .layui-select:focus {
+  border-color: #1e9fff;
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 768px) {
+  .right-actions {
+    flex-direction: column;
+  }
+
+  .filter-group {
+    width: 100%;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+
+  .filter-item {
+    margin-bottom: 10px;
+    width: 100%;
+  }
+}
+
+.layui-layer.patient-confirm-dialog {
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+  background-color: #fff;
+  font-family: 'Segoe UI', 'PingFang SC', sans-serif;
+}
+
+.layui-layer.patient-confirm-dialog .layui-layer-btn a {
+  background-color: #409eff;
+  color: #fff;
+  transition: all 0.2s;
+}
+
+.layui-layer.patient-confirm-dialog .layui-layer-btn a:last-child {
+  background-color: #f2f2f2;
+  color: #333;
+}
+
+.layui-layer.patient-confirm-dialog .layui-layer-btn a:hover {
+  opacity: 0.9;
+}
+
+/* 强制为内容卡片设置内边距，确保内部元素不会紧贴边缘 */
+.layui-card {
+  padding: 20px;
+}
+
+/* 卡片式预约列表样式 */
+.appointment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* 卡片之间的间距 */
+}
+
+.appointment-card {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  padding: 18px 20px;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  flex-wrap: wrap; /* 在小屏幕上换行 */
+}
+
+.appointment-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #d0d0d0;
+}
+
+.appointment-card .patient-info {
+  flex: 2; /* 占据更多空间 */
+  min-width: 150px;
+}
+
+.patient-info .name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.patient-info .type {
+  font-size: 13px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.appointment-card .appointment-details {
+  flex: 3;
+  min-width: 200px;
+  color: #555;
+  font-size: 14px;
+}
+
+.appointment-details .date,
+.appointment-details .time {
+  display: block;
+}
+
+.appointment-card .status {
+  flex: 1;
+  min-width: 100px;
+  text-align: center;
+}
+
+.appointment-card .actions {
+  flex: 2;
+  min-width: 180px;
+  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* 骨架屏动画的容器样式 */
+.skeleton-loader {
+  display: inline-block;
+  height: 20px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  border-radius: 4px;
+  animation: skeleton-animation 1.5s ease-in-out infinite;
+  width: 100%;
+}
+
+@keyframes skeleton-animation {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

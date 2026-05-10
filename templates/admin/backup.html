@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>数据备份</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link href="//unpkg.com/layui@2.10.1/dist/css/layui.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/layui/2.5.5/layui.min.js"></script>
+  <style>
+    .layui-card {
+      margin-bottom: 15px;
+      box-shadow: 0 1px 2px 0 rgba(0,0,0,.05);
+    }
+    .backup-icon {
+      font-size: 18px;
+      margin-right: 10px;
+    }
+    .backup-db { color: #1E9FFF; }
+    .backup-sql { color: #009688; }
+    .layui-timeline-axis {
+      color: #1E9FFF;
+    }
+    .backup-status-auto {
+      color: #5FB878;
+    }
+    .backup-status-manual {
+      color: #1E9FFF;
+    }
+    .backup-size-small {
+      color: #5FB878;
+    }
+    .backup-size-medium {
+      color: #FFB800;
+    }
+    .backup-size-large {
+      color: #FF5722;
+    }
+    .backup-tip {
+      background-color: #f8f8f8;
+      padding: 10px;
+      border-left: 5px solid #1E9FFF;
+      margin-bottom: 15px;
+    }
+    /* 优化自动备份开关按钮布局，强制一行显示 */
+    .layui-form-item.auto-backup-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .layui-form-item.auto-backup-row .layui-form-label {
+      width: auto;
+      min-width: 120px;
+      padding-right: 18px;
+      text-align: left;
+      white-space: nowrap;
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 0;
+    }
+    .layui-form-item.auto-backup-row .layui-input-block {
+      margin-left: 0 !important;
+      display: flex;
+      align-items: center;
+    }
+    /* 合理大小的Layui开关按钮，保证文字不被遮挡 */
+    .layui-form-switch {
+      transform: scale(1.08);
+      margin-left: 0 !important;
+      min-width: 60px;
+      height: 28px;
+      padding: 0 8px;
+      box-sizing: border-box;
+      position: relative;
+      overflow: visible;
+    }
+    /* 隐藏原em文字 */
+    .layui-form-switch em { opacity: 0 !important; }
+    /* "开"在左，开时显示 */
+    .layui-form-switch[lay-skin="switch"]::before {
+      content: "开";
+      position: absolute;
+      left: 14px;
+      top: 0;
+      color: #fff;
+      font-size: 15px;
+      z-index: 2;
+      transition: opacity 0.2s;
+      opacity: 1;
+      height: 28px;
+      line-height: 28px;
+      pointer-events: none;
+    }
+    .layui-form-switch[lay-skin="switch"]:not(.layui-form-onswitch)::before {
+      opacity: 0;
+    }
+    /* "关"在右，关时显示 */
+    .layui-form-switch[lay-skin="switch"]::after {
+      content: "关";
+      position: absolute;
+      right: 14px;
+      top: 0;
+      color: #bfbfbf;
+      font-size: 15px;
+      z-index: 2;
+      transition: opacity 0.2s;
+      opacity: 0;
+      height: 28px;
+      line-height: 28px;
+      pointer-events: none;
+    }
+    .layui-form-switch[lay-skin="switch"]:not(.layui-form-onswitch)::after {
+      opacity: 1;
+    }
+  </style>
+
+    <!-- 字体图标备用方案 -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 检查字体图标是否正确加载
+        setTimeout(function() {
+            var testIcon = document.createElement('i');
+            testIcon.className = 'fas fa-user';
+            testIcon.style.visibility = 'hidden';
+            document.body.appendChild(testIcon);
+            
+            var iconStyle = window.getComputedStyle(testIcon);
+            var isFontLoaded = iconStyle.fontFamily.includes('Font Awesome') || 
+                               iconStyle.fontFamily.includes('FontAwesome');
+            
+            if (!isFontLoaded) {
+                console.log('字体图标未正确加载，加载备用方案');
+                // 加载备用CSS
+                var link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = '../static/download_style/css/font-awesome-4.7.0.min.css';
+                document.head.appendChild(link);
+            }
+            
+            document.body.removeChild(testIcon);
+        }, 500);
+    });
+    </script>
+    </head>
+
+<body>
+  <div class="layui-layout layui-layout-admin">
+    <!-- 顶部导航 -->
+    <div class="layui-header">
+      <div class="layui-logo">医疗系统管理后台</div>
+      <ul class="layui-nav layui-layout-right">
+        <li class="layui-nav-item">
+          <a href="javascript:;">
+            <img src="/static/img/icon.png" class="layui-nav-img">
+            {{ current_user.username }}
+          </a>
+          <dl class="layui-nav-child">
+            <dd><a href="{{ url_for('logout') }}">退出登录</a></dd>
+          </dl>
+        </li>
+      </ul>
+    </div>
+
+    <!-- 左侧菜单 -->
+    <div class="layui-side layui-bg-black">
+      <div class="layui-side-scroll">
+        <ul class="layui-nav layui-nav-tree" data-lay-filter="test">
+          <li class="layui-nav-item {{ 'layui-this' if request.endpoint == 'admin_index' else '' }}">
+            <a href="{{ url_for('admin_index') }}"><i class="layui-icon">&#xe68e;</i> 首页</a>
+          </li>
+          <li class="layui-nav-item {{ 'layui-nav-itemed' if request.endpoint in ['admin_user_list','admin_user_add'] else '' }}">
+            <a href="javascript:;">用户管理</a>
+            <dl class="layui-nav-child">
+              <dd class="{{ 'layui-this' if request.endpoint == 'admin_user_list' else '' }}"><a href="{{ url_for('admin_user_list') }}">用户列表</a></dd>
+              <dd class="{{ 'layui-this' if request.endpoint == 'admin_user_add' else '' }}"><a href="{{ url_for('admin_user_add') }}">添加用户</a></dd>
+            </dl>
+          </li>
+          <li class="layui-nav-item {{ 'layui-nav-itemed' if request.endpoint in ['admin_system_config','admin_logs','admin_backup'] else '' }}">
+            <a href="javascript:;">系统设置</a>
+            <dl class="layui-nav-child">
+              <dd class="{{ 'layui-this' if request.endpoint == 'admin_system_config' else '' }}"><a href="{{ url_for('admin_system_config') }}">系统配置</a></dd>
+              <dd class="{{ 'layui-this' if request.endpoint == 'admin_logs' else '' }}"><a href="{{ url_for('admin_logs') }}">操作日志</a></dd>
+              <dd class="{{ 'layui-this' if request.endpoint == 'admin_backup' else '' }}"><a href="{{ url_for('admin_backup') }}">数据备份</a></dd>
+            </dl>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+
+    <!-- 内容主体区域 -->
+    <div class="layui-body">
+      <div style="padding: 15px;">
+        <div class="layui-row layui-col-space15">
+          <!-- 左侧 - 备份列表和操作 -->
+          <div class="layui-col-md8">
+            <div class="layui-card">
+              <div class="layui-card-header">
+                <span>数据库备份管理</span>
+                <div class="layui-btn-group" style="float: right;">
+                  <form action="{{ url_for('admin_backup') }}" method="post" style="display: inline;">
+                    <button type="submit" class="layui-btn layui-btn-sm layui-btn-normal">
+                      <i class="layui-icon">&#xe654;</i> 创建新备份
+                    </button>
+                  </form>
+                </div>
+              </div>
+              <div class="layui-card-body">
+                <div class="backup-tip">
+                  <i class="layui-icon layui-icon-tips"></i> 数据库备份功能可以帮助您保存系统数据，以防数据丢失或损坏。建议定期进行备份操作。
+                </div>
+                
+                <!-- 备份文件表格 -->
+                <div style="margin-bottom:10px;">
+                  <button id="batchDeleteBtn" class="layui-btn layui-btn-danger layui-btn-sm"><i class="layui-icon">&#xe640;</i> 批量删除</button>
+                </div>
+                <table class="layui-table" lay-skin="line">
+                  <thead>
+                    <tr>
+                      <th width="5%"><input type="checkbox" id="selectAllBackups"></th>
+                      <th width="30%">备份文件名</th>
+                      <th width="10%">类型</th>
+                      <th width="10%">大小</th>
+                      <th width="20%">创建时间</th>
+                      <th width="10%">状态</th>
+                      <th width="20%">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% if backups %}
+                      {% for backup in backups %}
+                      <tr>
+                        <td><input type="checkbox" class="backup-checkbox" value="{{ backup.filename }}"></td>
+                        <td>
+                          {% if backup.filename.endswith('.db') %}
+                          <i class="layui-icon backup-icon backup-db">&#xe857;</i>
+                          {% else %}
+                          <i class="layui-icon backup-icon backup-sql">&#xe64d;</i>
+                          {% endif %}
+                          {{ backup.filename }}
+                        </td>
+                        <td>{{ backup.filename.split('.')[-1].upper() }}</td>
+                        <td>
+                          {% if backup.size < 1 %}
+                          <span class="backup-size-small">{{ backup.size }} MB</span>
+                          {% elif backup.size < 5 %}
+                          <span class="backup-size-medium">{{ backup.size }} MB</span>
+                          {% else %}
+                          <span class="backup-size-large">{{ backup.size }} MB</span>
+                          {% endif %}
+                        </td>
+                        <td>{{ backup.create_time }}</td>
+                        <td>
+                          {% if 'auto_' in backup.filename %}
+                          <span class="backup-status-auto">自动</span>
+                          {% else %}
+                          <span class="backup-status-manual">手动</span>
+                          {% endif %}
+                        </td>
+                        <td>
+                          <div class="layui-btn-group">
+                            <a href="{{ url_for('admin_download_backup', filename=backup.filename) }}" class="layui-btn layui-btn-xs">
+                              <i class="layui-icon">&#xe601;</i> 下载
+                            </a>
+                            <button type="button" class="layui-btn layui-btn-xs layui-btn-normal" onclick="confirmRestore('{{ backup.filename }}')">
+                              <i class="layui-icon">&#xe669;</i> 恢复
+                            </button>
+                            <button type="button" class="layui-btn layui-btn-xs layui-btn-danger" onclick="confirmDelete('{{ backup.filename }}')">
+                              <i class="layui-icon">&#xe640;</i> 删除
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    {% else %}
+                      <tr>
+                        <td colspan="7" style="text-align: center;">暂无备份文件</td>
+                      </tr>
+                    {% endif %}
+                  </tbody>
+                </table>
+                
+                <!-- 批量操作按钮 -->
+                <div class="layui-btn-group" style="margin-top: 15px;">
+                  <button type="button" class="layui-btn layui-btn-sm layui-btn-danger" onclick="confirmDeleteAll()">
+                    <i class="layui-icon">&#xe640;</i> 删除所有备份
+                  </button>
+                  <button type="button" class="layui-btn layui-btn-sm" onclick="confirmDeleteOld()">
+                    <i class="layui-icon">&#xe640;</i> 删除旧备份
+                  </button>
+                  {% if backups and backups|length >= 2 %}
+                  <button type="button" class="layui-btn layui-btn-sm" onclick="showCompareBackups()">
+                    <i class="layui-icon">&#xe857;</i> 比较备份
+                  </button>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 右侧 - 自动备份设置和备份历史 -->
+          <div class="layui-col-md4">
+            <!-- 自动备份设置 -->
+            <div class="layui-card">
+              <div class="layui-card-header">自动备份设置</div>
+              <div class="layui-card-body">
+                <form class="layui-form" action="{{ url_for('admin_backup_settings') }}" method="post" lay-filter="backupSettingsForm">
+                  <div class="layui-form-item auto-backup-row">
+                    <label class="layui-form-label">启用自动备份</label>
+                    <div class="layui-input-block">
+                      <input type="checkbox" name="enable_auto_backup" lay-skin="switch" lay-text="开|关" {% if backup_settings and backup_settings.enable_auto_backup %}checked{% endif %}>
+                    </div>
+                  </div>
+                  <div class="layui-form-item">
+                    <label class="layui-form-label">备份频率</label>
+                    <div class="layui-input-block">
+                      <select name="backup_frequency">
+                        <option value="daily" {% if backup_settings and backup_settings.backup_frequency == 'daily' %}selected{% endif %}>每天</option>
+                        <option value="weekly" {% if backup_settings and backup_settings.backup_frequency == 'weekly' %}selected{% endif %}>每周</option>
+                        <option value="monthly" {% if backup_settings and backup_settings.backup_frequency == 'monthly' %}selected{% endif %}>每月</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="layui-form-item">
+                    <label class="layui-form-label">保留数量</label>
+                    <div class="layui-input-block">
+                      <input type="number" name="keep_backups" placeholder="保留的备份数量" autocomplete="off" class="layui-input" min="1" max="30" value="{{ backup_settings.keep_backups if backup_settings else 5 }}">
+                    </div>
+                  </div>
+                  <div class="layui-form-item">
+                    <div class="layui-input-block">
+                      <button class="layui-btn" lay-submit lay-filter="backupSettingsForm">保存设置</button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+            
+            <!-- 备份历史 -->
+            <div class="layui-card">
+              <div class="layui-card-header">备份历史记录</div>
+              <div class="layui-card-body">
+                <ul class="layui-timeline">
+                  {% set count = 0 %}
+                  {% for backup in backups %}
+                    {% if count < 5 %}
+                      <li class="layui-timeline-item">
+                        <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+                        <div class="layui-timeline-content layui-text">
+                          <h3 class="layui-timeline-title">{{ backup.create_time }}</h3>
+                          <p>
+                            {% if 'auto_' in backup.filename %}
+                            <span class="layui-badge layui-bg-green">自动备份</span>
+                            {% else %}
+                            <span class="layui-badge layui-bg-blue">手动备份</span>
+                            {% endif %}
+                            {{ backup.filename }} ({{ backup.size }} MB)
+                          </p>
+                        </div>
+                      </li>
+                      {% set count = count + 1 %}
+                    {% endif %}
+                  {% endfor %}
+                  {% if not backups %}
+                    <li class="layui-timeline-item">
+                      <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+                      <div class="layui-timeline-content layui-text">
+                        <h3 class="layui-timeline-title">暂无备份历史</h3>
+                        <p>您可以创建新的备份来保护系统数据</p>
+                      </div>
+                    </li>
+                  {% endif %}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 备份详细信息 -->
+        <div class="layui-card">
+          <div class="layui-card-header">备份说明</div>
+          <div class="layui-card-body">
+            <div class="layui-collapse" lay-accordion="">
+              <div class="layui-colla-item">
+                <h2 class="layui-colla-title">关于数据备份</h2>
+                <div class="layui-colla-content layui-show">
+                  <p>1. 数据备份包含系统所有的用户数据、医疗记录和系统配置。</p>
+                  <p>2. 恢复备份将会覆盖当前的所有数据，请谨慎操作。</p>
+                  <p>3. 建议定期下载备份文件到本地，以防系统故障导致备份文件丢失。</p>
+                  <p>4. 备份文件按创建时间排序，最新的备份在最上方。</p>
+                </div>
+              </div>
+              <div class="layui-colla-item">
+                <h2 class="layui-colla-title">自动备份功能说明</h2>
+                <div class="layui-colla-content">
+                  <p>1. 自动备份将按照设定的频率在系统空闲时自动执行。</p>
+                  <p>2. 系统会根据设置保留指定数量的备份，超出的最旧备份将被自动删除。</p>
+                  <p>3. 自动备份文件名以"auto_"开头，方便识别。</p>
+                  <p>4. 建议同时使用自动备份和手动备份，以提高数据安全性。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 恢复确认表单 -->
+  <form id="restoreForm" method="post" style="display: none;"></form>
+  
+  <!-- 删除确认表单 -->
+  <form id="deleteForm" method="post" style="display: none;"></form>
+  
+  <!-- 删除所有备份表单 -->
+  <form id="deleteAllForm" action="{{ url_for('admin_delete_all_backups') }}" method="post" style="display: none;"></form>
+  
+  <!-- 删除旧备份表单 -->
+  <form id="deleteOldForm" action="{{ url_for('admin_delete_old_backups') }}" method="post" style="display: none;"></form>
+  
+  <!-- 比较备份对话框模板 -->
+  <div id="compare-backup-dialog" style="display: none; padding: 20px;">
+    <form class="layui-form" id="compare-backup-form" action="{{ url_for('admin_compare_backups') }}" method="post">
+      <div class="layui-form-item">
+        <label class="layui-form-label">备份 A</label>
+        <div class="layui-input-block">
+          <select name="backup_a" lay-verify="required">
+            {% for backup in backups %}
+            <option value="{{ backup.filename }}">{{ backup.filename }} ({{ backup.create_time }})</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="layui-form-item">
+        <label class="layui-form-label">备份 B</label>
+        <div class="layui-input-block">
+          <select name="backup_b" lay-verify="required">
+            {% for backup in backups %}
+            <option value="{{ backup.filename }}" {% if loop.index == 1 %}selected{% endif %}>{{ backup.filename }} ({{ backup.create_time }})</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="layui-form-item">
+        <div class="layui-input-block">
+          <button class="layui-btn" lay-submit>开始比较</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    layui.use(['element', 'layer', 'form'], function() {
+      var element = layui.element;
+      var layer = layui.layer;
+      var form = layui.form;
+    });
+    
+    // 确认恢复备份
+    function confirmRestore(filename) {
+      layui.layer.confirm('确定要恢复此备份吗？<br><span style="color: red;">警告：此操作将覆盖当前所有数据！</span>', {
+        btn: ['确定恢复', '取消'],
+        icon: 3,
+        title: '恢复确认'
+      }, function() {
+        var form = document.getElementById('restoreForm');
+        form.action = "{{ url_for('admin_restore_backup', filename='') }}" + filename;
+        form.submit();
+      });
+    }
+    
+    // 确认删除备份
+    function confirmDelete(filename) {
+      layui.layer.confirm('确定要删除此备份吗？此操作不可恢复！', {
+        btn: ['确定删除', '取消'],
+        icon: 3,
+        title: '删除确认'
+      }, function() {
+        var form = document.getElementById('deleteForm');
+        form.action = "{{ url_for('admin_delete_backup', filename='') }}" + filename;
+        form.submit();
+      });
+    }
+    
+    // 确认删除所有备份
+    function confirmDeleteAll() {
+      layui.layer.confirm('确定要删除所有备份文件吗？<br><span style="color: red;">此操作不可恢复！</span>', {
+        btn: ['确定删除', '取消'],
+        icon: 3,
+        title: '批量删除确认'
+      }, function() {
+        document.getElementById('deleteAllForm').submit();
+      });
+    }
+    
+    // 确认删除旧备份
+    function confirmDeleteOld() {
+      layui.layer.prompt({
+        formType: 0,
+        value: '3',
+        title: '请输入要保留的最新备份数量',
+        area: ['300px', '150px']
+      }, function(value, index, elem) {
+        if (!/^\d+$/.test(value) || parseInt(value) < 1) {
+          layui.layer.msg('请输入有效的数字(≥1)', {icon: 2});
+          return;
+        }
+        
+        var form = document.getElementById('deleteOldForm');
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'keep_count';
+        input.value = value;
+        form.appendChild(input);
+        form.submit();
+        
+        layui.layer.close(index);
+      });
+    }
+    
+    // 显示比较备份对话框
+    function showCompareBackups() {
+      layui.use('form', function() {
+        var form = layui.form;
+        
+        layui.layer.open({
+          type: 1,
+          title: '比较备份文件',
+          area: ['500px', '300px'],
+          content: $('#compare-backup-dialog'),
+          success: function() {
+            form.render();
+          }
+        });
+      });
+    }
+
+    // 多选批量删除
+    function getSelectedBackups() {
+      return Array.from(document.querySelectorAll('.backup-checkbox:checked')).map(cb => cb.value);
+    }
+    document.getElementById('batchDeleteBtn').onclick = function() {
+      var files = getSelectedBackups();
+      if (!files.length) return layer.msg('请选择要删除的备份文件', {icon: 0});
+      layer.confirm('确定要批量删除选中的备份文件吗？', function(idx) {
+        layer.close(idx);
+        layer.load(1);
+        $.ajax({
+          url: '/api/admin/backup/delete',
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({filenames: files}),
+          success: function(res) {
+            layer.closeAll('loading');
+            if (res.code === 0) {
+              layer.msg('删除成功', {icon: 1});
+              location.reload();
+            } else {
+              layer.msg('删除失败', {icon: 2});
+            }
+          },
+          error: function() {
+            layer.closeAll('loading');
+            layer.msg('请求失败', {icon: 2});
+          }
+        });
+      });
+    };
+
+    document.getElementById('selectAllBackups').onclick = function() {
+      var checked = this.checked;
+      document.querySelectorAll('.backup-checkbox').forEach(cb => cb.checked = checked);
+    };
+
+    // 在创建新备份按钮处增加 loading 动画
+    var createBtn = document.querySelector('form[action$="admin_backup"] button[type="submit"]');
+    if(createBtn){
+      createBtn.addEventListener('click', function(){
+        layer.load(1, {shade: [0.2,'#fff'], content: '正在创建备份...'});
+      });
+    }
+    // 下载按钮 loading
+    document.querySelectorAll('a[href*="admin_download_backup"]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var idx = layer.load(1, {shade: [0.2,'#fff'], content: '正在下载...'});
+        setTimeout(function(){ layer.close(idx); }, 3000); // 3秒后自动关闭，防止卡住
+      });
+    });
+
+    // 自动备份设置表单AJAX提交
+    layui.use(['form', 'layer'], function() {
+      var form = layui.form;
+      var layer = layui.layer;
+      
+      // 监听表单提交
+      form.on('submit(backupSettingsForm)', function(data) {
+        console.log('表单提交事件触发');
+        
+        // 获取开关状态
+        var enableAutoBackup = data.field.enable_auto_backup === 'on';
+        console.log('自动备份状态:', enableAutoBackup ? '启用' : '关闭');
+        
+        // 构造请求数据
+        var requestData = {
+          enable_auto_backup: enableAutoBackup,
+          backup_frequency: data.field.backup_frequency,
+          keep_backups: data.field.keep_backups
+        };
+        
+        console.log('请求数据:', requestData);
+        
+        // 显示加载动画
+        var loadIndex = layer.load(1, {shade: [0.2,'#fff'], content: '正在保存设置...'});
+        
+        // 发送AJAX请求
+        fetch(data.form.action, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: new URLSearchParams(requestData)
+        })
+        .then(response => {
+          console.log('收到响应:', response);
+          return response.json();
+        })
+        .then(res => {
+          console.log('解析响应数据:', res);
+          // 关闭加载动画
+          layer.close(loadIndex);
+          
+          if(res.code === 0){
+            // 根据开关状态显示不同的成功消息
+            var successMsg = enableAutoBackup ? 
+              '自动备份已启用' : 
+              '自动备份已关闭';
+            
+            layer.msg(successMsg, {
+              icon: 1,
+              time: 2000
+            }, function(){
+              // 延迟刷新页面
+              setTimeout(function(){ 
+                location.reload(); 
+              }, 1000);
+            });
+          } else {
+            console.error('保存失败:', res.msg);
+            layer.msg(res.msg || '保存失败', {
+              icon: 2,
+              time: 2000
+            });
+          }
+        })
+        .catch(error => {
+          console.error('请求错误:', error);
+          // 关闭加载动画
+          layer.close(loadIndex);
+          
+          // 显示错误信息
+          layer.msg('请求失败，请稍后重试', {
+            icon: 2,
+            time: 2000
+          });
+        });
+        
+        return false;
+      });
+    });
+  </script>
+</body>
+
+</html> 

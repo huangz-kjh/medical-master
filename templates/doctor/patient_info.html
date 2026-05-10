@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>患者详情</title>
+    <link href="../static/download_style/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="../static/download_style/css/all.min.css" rel="stylesheet"/>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .section-title {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            padding-left: 0.75rem;
+            border-left: 0.4rem solid #0d6efd;
+            color: #0d6efd;
+            font-weight: 600;
+        }
+
+        .main-container {
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .custom-list-item {
+            padding: 1rem;
+            background-color: #fdfdfd;
+            border-radius: 0.25rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid #dee2e6;
+        }
+
+        .ai-report-card {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            margin-bottom: 1rem;
+        }
+
+        .ai-report-card img {
+            max-height: 200px;
+            object-fit: cover;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+        }
+
+        .sub-info {
+            font-size: 0.95rem;
+            color: #6c757d;
+        }
+
+        .follow-up-list {
+            padding-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .alert-fixed {
+            z-index: 9999;
+        }
+    </style>
+    <script>
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3 alert-fixed`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+
+        function handleDeleteReport(reportId) {
+            if (!confirm('确认删除该分析报告吗？此操作不可恢复！')) return false;
+
+            fetch(`/patients/${parseInt(reportId)}/delete-report`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showAlert(data.message, 'success');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showAlert(data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    showAlert('删除操作失败，请重试', 'danger');
+                    console.error('Error:', error);
+                });
+            return false;
+        }
+    </script>
+
+    <!-- 字体图标备用方案 -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 检查字体图标是否正确加载
+        setTimeout(function() {
+            var testIcon = document.createElement('i');
+            testIcon.className = 'fas fa-user';
+            testIcon.style.visibility = 'hidden';
+            document.body.appendChild(testIcon);
+            
+            var iconStyle = window.getComputedStyle(testIcon);
+            var isFontLoaded = iconStyle.fontFamily.includes('Font Awesome') || 
+                               iconStyle.fontFamily.includes('FontAwesome');
+            
+            if (!isFontLoaded) {
+                console.log('字体图标未正确加载，加载备用方案');
+                // 加载备用CSS
+                var link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = '../static/download_style/css/font-awesome-4.7.0.min.css';
+                document.head.appendChild(link);
+            }
+            
+            document.body.removeChild(testIcon);
+        }, 500);
+    });
+    </script>
+    </head>
+<body>
+<div class="container mt-5 main-container">
+    <h3>患者详情</h3>
+    <h5 class="section-title">基本信息</h5>
+    <ul class="list-group mb-4">
+        <li class="list-group-item custom-list-item"><strong>姓名：</strong>{{ patient.name }}</li>
+        <li class="list-group-item custom-list-item"><strong>年龄：</strong>{{ patient.age }} 岁</li>
+        <li class="list-group-item custom-list-item"><strong>性别：</strong>{{ patient.gender }}</li>
+        <li class="list-group-item custom-list-item"><strong>地址：</strong>{{ patient.address }}</li>
+        <li class="list-group-item custom-list-item"><strong>联系方式：</strong>{{ patient.contact_info }}</li>
+        <li class="list-group-item custom-list-item"><strong>血型：</strong>{{ patient.blood_type or '未知' }}</li>
+        <li class="list-group-item custom-list-item"><strong>紧急联系人：</strong>{{ patient.emergency_contact or '无' }}
+        </li>
+    </ul>
+    <h5 class="section-title">病史记录</h5>
+    <ul class="list-group mb-4">
+        {% if medical_history %}
+        <li class="list-group-item custom-list-item"><strong>过敏史：</strong>{{ medical_history.allergy_info or '无' }}
+        </li>
+        <li class="list-group-item custom-list-item"><strong>家族病史：</strong>{{ medical_history.family_history or '无'
+            }}
+        </li>
+        <li class="list-group-item custom-list-item"><strong>既往头部创伤：</strong>{{
+            medical_history.previous_head_injuries or '无' }}
+        </li>
+        <li class="list-group-item custom-list-item"><strong>神经系统疾病史：</strong>{{
+            medical_history.neurological_conditions or '无' }}
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">无</li>
+        {% endif %}
+    </ul>
+    <h5 class="section-title">体检记录</h5>
+    <ul class="list-group mb-4">
+        {% for e in physical_exams %}
+        <li class="list-group-item custom-list-item">
+            日期：{{ e.exam_date }}，心率：{{ e.heart_rate }} 次/分，呼吸：{{ e.respiratory_rate }} 次/分，血压：{{
+            e.blood_pressure_systolic }}/{{ e.blood_pressure_diastolic }} mmHg，体温：{{ e.temperature }} ℃，体重：{{
+            e.weight }} kg，身高：{{ e.height }} cm
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">无</li>
+        {% endfor %}
+    </ul>
+    <h5 class="section-title">脑部CT扫描记录</h5>
+    <ul class="list-group mb-4">
+        {% for scan in brain_ct_scans %}
+        <li class="list-group-item custom-list-item">
+            <strong>扫描日期：</strong>{{ scan.scan_date }}，<strong>类型：</strong>{{ scan.scan_type
+            }}，<strong>技术员：</strong>{{ scan.technician }}，<strong>放射科医师：</strong>{{ scan.radiologist }}，<strong>原因：</strong>{{
+            scan.scan_reason }}<br/>
+            <strong>脑结构：</strong>{{ scan.brain_structure }}，<strong>脑室状态：</strong>{{ scan.ventricle_status
+            }}，<strong>颅骨状况：</strong>{{ scan.skull_condition }}，<strong>病变描述：</strong>{{ scan.lesion_description
+            }}，<strong>出血状态：</strong>{{ scan.hemorrhage_status }}，<strong>缺血情况：</strong>{{ scan.ischemia_status
+            }}，<strong>萎缩情况：</strong>{{ scan.atrophy_status }}，<strong>密度异常：</strong>{{
+            scan.density_abnormalities }}，<strong>结论：</strong>{{ scan.conclusion }}，<strong>建议随访：</strong>{{ '是'
+            if scan.follow_up_recommended else '否' }}
+        </li>
+        {% if ct_followups.get(scan.scan_id) %}
+        <li class="list-group-item follow-up-list">
+            <strong>随访记录：</strong>
+            <ul>
+                {% for f in ct_followups[scan.scan_id] %}
+                <li>日期：{{ f.follow_up_date }}，比较结果：{{ f.comparison_results }}，病情进展：{{ f.disease_progression
+                    }}，治疗反应：{{ f.treatment_response }}，下次随访：{{ f.next_follow_up }}
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
+        {% else %}
+        <li class="list-group-item text-muted">无</li>
+        {% endfor %}
+    </ul>
+    <h5 class="section-title">神经系统评估</h5>
+    <ul class="list-group mb-4">
+        {% for na in neuro_assessments %}
+        <li class="list-group-item custom-list-item">
+            日期：{{ na.assessment_date }}，运动：{{ na.motor_function }}，感觉：{{ na.sensory_function }}，反射：{{
+            na.reflex_status }}，协调：{{ na.coordination }}，脑神经检查：{{ na.cranial_nerve_exam }}，GCS：{{ na.gcs_score
+            }}，MMSE：{{ na.mmse_score }}，MoCA：{{ na.moca_score }}，备注：{{ na.assessment_notes }}，医师：{{ na.performed_by
+            }}
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">无</li>
+        {% endfor %}
+    </ul>
+    <h5 class="section-title">用药记录</h5>
+    <ul class="list-group mb-4">
+        {% for m in medication_records %}
+        <li class="list-group-item custom-list-item">
+            药物：{{ m.medication_name }}，剂量：{{ m.dosage }}，频率：{{ m.frequency }}，给药途径：{{ m.administration_route
+            }}，时间：{{ m.start_date }} - {{ m.end_date }}，指征：{{ m.indication or '无' }}，副作用：{{ m.side_effects or
+            '无' }}，疗效：{{ m.effectiveness or '无' }}，备注：{{ m.notes or '无' }}
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">无</li>
+        {% endfor %}
+    </ul>
+    <h5 class="section-title">心理健康评估</h5>
+    <ul class="list-group mb-4">
+        {% for mh in mental_health %}
+        <li class="list-group-item custom-list-item">
+            日期：{{ mh.assessment_date }}，状态总结：{{ mh.status_summary }}，焦虑：{{ mh.anxiety_level }}，抑郁：{{
+            mh.depression_level }}，睡眠质量：{{ mh.sleep_quality }}，建议：{{ mh.recommended_action }}
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">无</li>
+        {% endfor %}
+    </ul>
+    <h5 class="section-title">AI助手分析</h5>
+    <ul class="list-group mb-4">
+        {% if imaging_reports %}
+        {% for report in imaging_reports %}
+        <li class="list-group-item ai-report-card">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">
+                    <i class="fas fa-robot text-primary me-2"></i>
+                    {{ report.report_type }}分析报告
+                </h6>
+                <div>
+                    <small class="text-muted me-3">{{ report.report_date }}</small>
+                    <button class="btn btn-sm btn-outline-danger"
+                            onclick="handleDeleteReport('{{ report.report_id }}')">
+                        <i class="fas fa-trash-alt me-1"></i>删除
+                    </button>
+                </div>
+            </div>
+            {% if report.source_image_url %}
+            <div class="mb-3">
+                <img alt="检查图像" class="img-fluid rounded" src="{{ report.source_image_url }}"/>
+            </div>
+            {% endif %}
+            <div class="mb-2">
+                <strong class="text-primary">分析结果：</strong>
+                <p class="mb-2">{{ report.analysis_result }}</p>
+            </div>
+            {% if report.conclusion %}
+            <div class="mb-2">
+                <strong class="text-success">结论：</strong>
+                <p class="mb-2">{{ report.conclusion }}</p>
+            </div>
+            {% endif %}
+            {% if report.health_advice %}
+            <div>
+                <strong class="text-info">健康建议：</strong>
+                <p class="mb-0">{{ report.health_advice }}</p>
+            </div>
+            {% endif %}
+        </li>
+        {% endfor %}
+        {% else %}
+        <li class="list-group-item text-muted text-center py-3">
+            <i class="fas fa-robot fa-2x text-muted mb-2"></i>
+            <p class="mb-0">暂无AI分析报告</p>
+        </li>
+        {% endif %}
+    </ul>
+    <a class="btn btn-secondary" href="{{ url_for('patient_list') }}">返回列表</a>
+    <a class="btn btn-primary"
+       href="{{ url_for('medical_patient_treatment', patient_id=patient.patient_id) }}">治疗管理</a>
+</div>
+</body>
+</html>

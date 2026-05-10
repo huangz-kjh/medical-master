@@ -1,0 +1,190 @@
+/* 预约管理页面关键样式 - 优化加载速度 */
+
+/* 基础布局样式 - 确保页面框架首先显示 */
+body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #333;
+    background-color: #f5f7fa;
+    margin: 0;
+    padding: 0;
+}
+
+/* 布局容器 */
+.appointment-container {
+    padding: 15px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* 卡片基础样式 */
+.layui-card {
+    background-color: #fff; 
+    border-radius: 4px;
+    margin-bottom: 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.layui-card-header {
+    padding: 10px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    font-weight: 500;
+}
+
+.layui-card-body {
+    padding: 15px;
+}
+
+/* 加载指示器样式 */
+.loading-indicator {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border: 3px solid #f3f3f3;
+    border-radius: 50%;
+    border-top-color: #5FB878;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 表格基础样式 */
+.layui-table {
+    width: 100%;
+    background-color: #fff;
+    border-collapse: collapse;
+}
+
+.layui-table th {
+    background-color: #f8f9fa;
+    font-weight: 500;
+    text-align: left;
+    padding: 10px;
+    border-bottom: 1px solid #e6e6e6;
+}
+
+.layui-table td {
+    padding: 10px;
+    border-bottom: 1px solid #e6e6e6;
+}
+
+/* 状态标签基础样式 */
+.status-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: #fff;
+}
+
+.status-waiting-confirm {
+    background-color: #ff9800;
+}
+
+.status-confirmed {
+    background-color: #4caf50;
+}
+
+.status-completed {
+    background-color: #2196f3;
+}
+
+.status-cancelled {
+    background-color: #9e9e9e;
+}
+
+/* 按钮基础样式 */
+.layui-btn {
+    display: inline-block;
+    padding: 0 15px;
+    height: 38px;
+    line-height: 38px;
+    border: none;
+    background-color: #009688;
+    color: #fff;
+    border-radius: 2px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 14px;
+}
+
+.layui-btn-xs {
+    height: 22px;
+    line-height: 22px;
+    padding: 0 5px;
+    font-size: 12px;
+}
+
+.layui-btn-primary {
+    border: 1px solid #C9C9C9;
+    background-color: #fff;
+    color: #555;
+}
+
+.layui-btn-normal {
+    background-color: #1E9FFF;
+}
+
+.layui-btn-warm {
+    background-color: #FFB800;
+}
+
+.layui-btn-danger {
+    background-color: #FF5722;
+}
+
+/* 空状态展示 */
+.empty-state {
+    text-align: center;
+    padding: 30px 0;
+}
+
+.empty-state-cell {
+    text-align: center;
+    padding: 40px 0;
+}
+
+/* 日历容器基础样式 */
+#appointmentCalendar {
+    min-height: 300px;
+    background-color: #fff;
+    border-radius: 4px;
+}
+
+/* 重要通知样式 */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    border-radius: 4px;
+    padding: 15px;
+    max-width: 300px;
+    z-index: 10000;
+    transform: translateX(400px);
+    transition: transform 0.3s ease-in-out;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+/* 响应式适配 */
+@media screen and (max-width: 768px) {
+    .layui-hide-xs {
+        display: none;
+    }
+    
+    .layui-card-body {
+        padding: 10px;
+    }
+} 

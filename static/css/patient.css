@@ -1,0 +1,247 @@
+:root {
+    --primary-color: #9ecff7; /* 清新蓝 */
+    --secondary-color: #b4e3da; /* 淡绿色 */
+    --accent-color: #fcebb8; /* 柔黄色 */
+    --danger-color: #f5b5b5; /* 柔粉色 */
+    --info-color: #c6d8f7; /* 浅蓝紫 */
+    --light-color: #fdfdfd;
+    --gray-color: #8a8a8a;
+    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: #f8fbfd;
+    color: #333;
+    padding-bottom: 40px;
+}
+
+.custom-navbar {
+    background-color: var(--primary-color);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.custom-navbar .navbar-brand {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 20px;
+    padding: 0 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    border-left: 4px solid #e4eef7;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 30%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.8));
+    pointer-events: none;
+}
+
+.stat-title {
+    font-size: 0.9rem;
+    color: var(--gray-color);
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-top: 5px;
+    color: #4a4a4a;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+}
+
+.stat-icon {
+    font-size: 2.2rem;
+    opacity: 0.8;
+    margin-right: 10px;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover .stat-icon {
+    transform: scale(1.1);
+}
+
+/* 不同卡片的状态颜色 */
+.stat-card.total {
+    border-left-color: #5e97f6;
+}
+.stat-card.total .stat-icon {
+    color: #5e97f6;
+}
+
+.stat-card.new {
+    border-left-color: #56CCF2;
+}
+.stat-card.new .stat-icon {
+    color: #56CCF2;
+}
+
+.stat-card.treatment {
+    border-left-color: #FFA000;
+}
+.stat-card.treatment .stat-icon {
+    color: #FFA000;
+}
+
+.stat-card.completed {
+    border-left-color: #66BB6A;
+}
+.stat-card.completed .stat-icon {
+    color: #66BB6A;
+}
+
+.stat-card.followup {
+    border-left-color: #FDA085;
+}
+.stat-card.followup .stat-icon {
+    color: #FDA085;
+}
+
+.stat-card.urgent {
+    border-left-color: #FF7B7B;
+}
+.stat-card.urgent .stat-icon {
+    color: #FF7B7B;
+}
+
+.search-box {
+    padding: 0 20px 30px;
+}
+
+.table thead th {
+    font-size: 0.9rem;
+    background-color: #f0f4f9;
+    color: #4c4c4c;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.patient-info .avatar {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.gender-badge-male {
+    background-color: #a3d6f4;
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+}
+
+.gender-badge-female {
+    background-color: #f3b3d1;
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+}
+
+.card {
+    margin: 0 20px;
+    border-radius: 14px;
+    border: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+}
+
+.card-header {
+    background-color: #ffffff;
+    padding: 20px;
+    border-bottom: 1px solid #e8ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-header h5 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #6c757d;
+}
+
+.card-header .btn {
+    font-size: 0.875rem;
+    padding: 6px 12px;
+    background-color: var(--secondary-color);
+    border: none;
+    color: #333;
+    transition: background-color 0.3s ease;
+}
+
+.card-header .btn:hover {
+    background-color: #a9ded0;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f1f6fb;
+}
+
+.btn-group .btn {
+    font-size: 0.8rem;
+    padding: 5px 10px;
+    margin-right: 4px;
+    border-radius: 6px;
+    background-color: #e0f1f8;
+    color: #333;
+    border: none;
+}
+
+.btn-group .btn:hover {
+    background-color: #d3e9f2;
+}
+
+.alert {
+    max-width: 500px;
+    text-align: center;
+    background-color: #fff5e5;
+    color: #8a6d3b;
+    border: 1px solid #ffe0b2;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+    .stats-container {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+
+    .search-box .form-control {
+        font-size: 0.9rem;
+    }
+
+    .card-header h5 {
+        font-size: 1rem;
+    }
+
+    .btn-group .btn {
+        margin-bottom: 5px;
+    }
+}

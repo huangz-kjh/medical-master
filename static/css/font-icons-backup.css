@@ -1,0 +1,21 @@
+/* 备用图标CSS，当Font Awesome加载失败时使用 */
+.fa, .fas, .far, .fal, .fab {
+    font-family: Arial, sans-serif;
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    line-height: 1;
+}
+.fa-user:before { content: "👤"; }
+.fa-home:before { content: "🏠"; }
+.fa-file-medical-alt:before { content: "📋"; }
+.fa-users:before { content: "👥"; }
+.fa-calendar-check:before { content: "📅"; }
+.fa-comments:before { content: "💬"; }
+.fa-chart-bar:before { content: "📊"; }
+.fa-sign-out-alt:before { content: "🚪"; }
+.fa-spinner:before { content: "⏳"; }
+.fa-exclamation-circle:before { content: "⚠"; }
+.fa-check:before { content: "✓"; }
+.fa-times:before { content: "✕"; }
+.fa-search:before { content: "🔍"; }

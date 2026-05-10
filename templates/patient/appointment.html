@@ -1,0 +1,250 @@
+{% extends "iframe_base.html" %} {% block head %}
+<title>我的预约</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/patient_appointment.css') }}" />
+<style>
+  .tabs {
+    display: flex;
+    border-bottom: 2px solid #dee2e6;
+    margin-bottom: 20px;
+  }
+  .tab-item {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    border: none;
+    background-color: transparent;
+    color: #495057;
+    margin-bottom: -2px;
+    text-decoration: none;
+  }
+  .tab-item.active {
+    font-weight: bold;
+    color: #007bff;
+    border-bottom: 2px solid #007bff;
+  }
+  .pagination {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .pagination a,
+  .pagination span {
+    color: #007bff;
+    padding: 8px 16px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+    border: 1px solid #ddd;
+    margin: 0 4px;
+    border-radius: 4px;
+  }
+  .pagination span.disabled {
+    color: #6c757d;
+    cursor: default;
+  }
+  .pagination a:hover:not(.active) {
+    background-color: #ddd;
+  }
+  .pagination .active {
+    background-color: #007bff;
+    color: white;
+    border: 1px solid #007bff;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 20px;
+  }
+  .empty-state-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+  .status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #fff;
+  }
+  .status-pending {
+    background-color: #ffc107;
+    color: #000;
+  }
+  .status-confirmed {
+    background-color: #28a745;
+  }
+  .status-completed {
+    background-color: #17a2b8;
+  }
+  .status-cancelled {
+    background-color: #dc3545;
+  }
+  .status-rejected {
+    background-color: #6c757d;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container-fluid">
+  <div class="header">
+    <h1>我的预约</h1>
+    {% if role == 'patient' or role == 'admin' %}
+    <button class="btn btn-primary" id="book-appointment-btn">
+      <i class="fas fa-plus"></i> 新建预约
+    </button>
+    {% endif %}
+  </div>
+
+  <div class="tabs">
+    <a
+      href="{{ url_for('appointment_list', status_group='active', per_page=per_page) }}"
+      class="tab-item no-global-load {% if status_group == 'active' %}active{% endif %}"
+      >进行中</a
+    >
+    <a
+      href="{{ url_for('appointment_list', status_group='completed', per_page=per_page) }}"
+      class="tab-item no-global-load {% if status_group == 'completed' %}active{% endif %}"
+      >已完成</a
+    >
+    <a
+      href="{{ url_for('appointment_list', status_group='cancelled', per_page=per_page) }}"
+      class="tab-item no-global-load {% if status_group == 'cancelled' %}active{% endif %}"
+      >已取消/拒绝</a
+    >
+  </div>
+
+  <div class="controls-wrapper">
+    <div class="per-page-selector">
+      <label for="perPageSelect">每页显示:</label>
+      <select id="perPageSelect" name="per_page">
+        <option value="5" {% if per_page == 5 %}selected{% endif %}>5 条</option>
+        <option value="10" {% if per_page == 10 %}selected{% endif %}>10 条</option>
+        <option value="20" {% if per_page == 20 %}selected{% endif %}>20 条</option>
+        <option value="50" {% if per_page == 50 %}selected{% endif %}>50 条</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="appointment-list">
+    <!-- 新的加载动画容器 -->
+    <div class="loading-overlay">
+      <div class="spinner"></div>
+    </div>
+    <!-- 列表内容的包装容器 -->
+    <div class="list-content-wrapper">{% include 'patient/_appointments_content.html' %}</div>
+  </div>
+</div>
+
+<!-- 全局通知弹窗 -->
+<div id="notification-popup" class="notification"></div>
+
+<!-- Appointment Details Modal -->
+<div id="appointmentDetailsModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>预约详情</h2>
+      <button class="modal-close" id="closeDetailsBtn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p><strong>预约编号:</strong> <span id="detailId"></span></p>
+      <p><strong>类型:</strong> <span id="detailType"></span></p>
+      <p><strong>科室:</strong> <span id="detailDepartment"></span></p>
+      <p><strong>医生:</strong> <span id="detailDoctor"></span></p>
+      <p><strong>日期:</strong> <span id="detailDate"></span></p>
+      <p><strong>时间:</strong> <span id="detailTime"></span></p>
+      <p><strong>状态:</strong> <span id="detailStatus"></span></p>
+      <p><strong>症状描述:</strong> <span id="detailSymptoms"></span></p>
+      <p><strong>备注:</strong> <span id="detailNotes"></span></p>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel Appointment Modal -->
+<div id="cancelAppointmentModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>取消预约</h2>
+      <button class="modal-close" id="abortCancelBtn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cancelAppointmentId" />
+      <p>您确定要取消这个预约吗？</p>
+      <textarea id="cancelReason" placeholder="请输入取消原因（可选）"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="cancelAppointmentBtn">再想想</button>
+      <button class="btn btn-danger" id="confirmCancelBtn">确认取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- Book Appointment Modal -->
+<div id="book-appointment-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>新建预约</h2>
+      <button class="modal-close">&times;</button>
+    </div>
+    <form id="book-appointment-form" class="modal-body">
+      <div class="form-group">
+        <label for="doctorSelect">选择医生</label>
+        <select id="doctorSelect" name="doctor_id" required>
+          <option value="">请选择</option>
+          <!-- Doctors will be loaded here by JS -->
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="appointmentType">预约类型</label>
+        <select id="appointmentType" name="appointment_type" required>
+          <option value="regular">常规检查</option>
+          <option value="followup">复诊随访</option>
+          <option value="specialist">专科预约</option>
+          <option value="emergency">加急预约</option>
+          <option value="special">特需门诊</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="department">科室</label>
+        <select id="department" name="department" required>
+          <option value="neurology">神经科</option>
+          <option value="radiology">放射科</option>
+          <option value="cardiology">心脏科</option>
+          <option value="orthopedics">骨科</option>
+          <option value="internal">内科</option>
+          <option value="neurosurgery">神经外科</option>
+          <option value="neurology_internal">神经内科</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="appointmentDate">选择日期</label>
+        <input type="date" id="appointmentDate" name="date" required />
+      </div>
+      <div class.form-group>
+        <label for="timeSlot">选择时间段</label>
+        <select id="timeSlot" name="time_slot" required>
+          <option value="morning">上午 (8:00-12:00)</option>
+          <option value="afternoon">下午 (14:00-17:30)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="symptoms">症状描述</label>
+        <textarea
+          id="symptoms"
+          name="symptoms"
+          rows="3"
+          placeholder="请简单描述您的症状"
+        ></textarea>
+      </div>
+    </form>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary modal-close">取消</button>
+      <button type="button" class="btn btn-primary" id="submitAppointment">提交</button>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/patient_appointment.js') }}"></script>
+{% endblock %}

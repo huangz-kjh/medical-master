@@ -1,0 +1,1143 @@
+/* 全局样式 */
+:root {
+    --primary-color: #3498db;
+    --success-color: #2ecc71;
+    --warning-color: #f39c12;
+    --danger-color: #e74c3c;
+    --info-color: #1abc9c;
+    --muted-color: #95a5a6;
+    --light-color: #ecf0f1;
+    --dark-color: #34495e;
+    --border-color: #e6e6e6;
+    --box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* 容器样式 */
+.layui-container {
+    padding: 20px 15px;
+    max-width: 1280px;
+}
+
+/* 卡片样式 */
+.layui-card {
+    border-radius: 6px;
+    box-shadow: var(--box-shadow);
+    margin-bottom: 20px;
+    background-color: #fff;
+    border: none;
+}
+
+.layui-card-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: bold;
+    color: var(--dark-color);
+    display: flex;
+    align-items: center;
+}
+
+.layui-card-header h2,
+.layui-card-header h3 {
+    font-size: 18px;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+}
+
+.layui-card-header h2 .layui-icon,
+.layui-card-header h3 .layui-icon {
+    margin-right: 8px;
+    font-size: 20px;
+}
+
+.layui-card-body {
+    padding: 20px;
+}
+
+/* 统计卡片样式 */
+.layui-text-center {
+    text-align: center;
+}
+
+.layui-bg-blue {
+    background-color: var(--primary-color) !important;
+    color: #fff;
+}
+
+.layui-bg-green {
+    background-color: var(--success-color) !important;
+    color: #fff;
+}
+
+.layui-bg-orange {
+    background-color: var(--warning-color) !important;
+    color: #fff;
+}
+
+.layui-bg-red {
+    background-color: var(--danger-color) !important;
+    color: #fff;
+}
+
+.layui-bg-cyan {
+    background-color: var(--info-color) !important;
+    color: #fff;
+}
+
+.layui-bg-gray {
+    background-color: var(--muted-color) !important;
+    color: #fff;
+}
+
+.layui-card.layui-bg-blue,
+.layui-card.layui-bg-green,
+.layui-card.layui-bg-orange,
+.layui-card.layui-bg-red,
+.layui-card.layui-bg-cyan,
+.layui-card.layui-bg-gray {
+    border-radius: 6px;
+    transition: transform 0.3s;
+}
+
+.layui-card.layui-bg-blue:hover,
+.layui-card.layui-bg-green:hover,
+.layui-card.layui-bg-orange:hover,
+.layui-card.layui-bg-red:hover,
+.layui-card.layui-bg-cyan:hover,
+.layui-card.layui-bg-gray:hover {
+    transform: translateY(-3px);
+}
+
+.layui-card.layui-bg-blue .layui-card-body,
+.layui-card.layui-bg-green .layui-card-body,
+.layui-card.layui-bg-orange .layui-card-body,
+.layui-card.layui-bg-red .layui-card-body,
+.layui-card.layui-bg-cyan .layui-card-body,
+.layui-card.layui-bg-gray .layui-card-body {
+    padding: 15px;
+}
+
+.layui-card.layui-bg-blue .layui-card-body p,
+.layui-card.layui-bg-green .layui-card-body p,
+.layui-card.layui-bg-orange .layui-card-body p,
+.layui-card.layui-bg-red .layui-card-body p,
+.layui-card.layui-bg-cyan .layui-card-body p,
+.layui-card.layui-bg-gray .layui-card-body p {
+    font-size: 14px;
+    margin: 0 0 5px;
+    opacity: 0.9;
+}
+
+.layui-card.layui-bg-blue .layui-card-body h2,
+.layui-card.layui-bg-green .layui-card-body h2,
+.layui-card.layui-bg-orange .layui-card-body h2,
+.layui-card.layui-bg-red .layui-card-body h2,
+.layui-card.layui-bg-cyan .layui-card-body h2,
+.layui-card.layui-bg-gray .layui-card-body h2 {
+    font-size: 24px;
+    margin: 0;
+    font-weight: 600;
+}
+
+/* 按钮样式 */
+.layui-btn {
+    border-radius: 4px;
+    padding: 0 16px;
+    height: 38px;
+    line-height: 38px;
+    transition: all 0.3s;
+}
+
+.layui-btn-normal {
+    background-color: var(--primary-color);
+}
+
+.layui-btn-warm {
+    background-color: var(--warning-color);
+}
+
+.layui-btn-danger {
+    background-color: var(--danger-color);
+}
+
+.layui-btn-primary {
+    border-color: #ddd;
+    color: #666;
+}
+
+.layui-btn-primary:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.layui-btn-sm {
+    height: 30px;
+    line-height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+}
+
+.layui-btn .layui-icon {
+    margin-right: 5px;
+    font-size: 14px;
+}
+
+.layui-btn-group {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.layui-btn-group .layui-btn {
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+/* 标签页样式 */
+.layui-tab {
+    margin: 0;
+}
+
+.layui-tab-title {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.layui-tab-title li {
+    padding: 0 18px;
+    line-height: 40px;
+    font-size: 14px;
+    min-width: 60px;
+    transition: all 0.3s;
+}
+
+.layui-tab-title .layui-this {
+    color: var(--primary-color);
+}
+
+.layui-tab-title .layui-this:after {
+    border-bottom: 2px solid var(--primary-color);
+    height: 41px;
+}
+
+.layui-tab-content {
+    padding: 15px 0;
+}
+
+/* 表格样式 */
+.layui-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.layui-table thead tr {
+    background-color: #f9f9f9;
+}
+
+.layui-table th {
+    font-weight: bold;
+    color: #555;
+    padding: 12px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.layui-table td {
+    padding: 12px 8px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.layui-table-line tbody tr:hover {
+    background-color: #f5f7fa;
+}
+
+/* 徽章样式 */
+.layui-badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: normal;
+    line-height: 1;
+    display: inline-block;
+}
+
+.layui-badge-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+/* 链接样式 */
+.layui-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.layui-link:hover {
+    color: #217dbb;
+    text-decoration: underline;
+}
+
+/* 表单样式 */
+.layui-form-label {
+    width: 100px;
+    padding: 9px 15px 9px 0;
+    text-align: right;
+}
+
+.layui-input-block {
+    margin-left: 130px;
+}
+
+.layui-input, .layui-select, .layui-textarea {
+    border-radius: 4px;
+    padding: 8px 10px;
+    border: 1px solid #e6e6e6;
+    transition: all 0.3s;
+}
+
+.layui-input:focus, .layui-select:focus, .layui-textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+}
+
+.layui-input-group {
+    display: flex;
+    position: relative;
+}
+
+.layui-input-suffix {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+}
+
+/* 工具栏样式 */
+.layui-btn-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* 下拉菜单样式 */
+.layui-dropdown-menu {
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.layui-dropdown-menu li {
+    list-style: none;
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.layui-dropdown-menu li:hover {
+    background-color: #f5f7fa;
+    color: var(--primary-color);
+}
+
+/* 空状态样式 */
+.layui-empty {
+    text-align: center;
+    padding: 40px 0;
+    color: #888;
+}
+
+.layui-empty .layui-icon {
+    font-size: 48px;
+    color: #ccc;
+    display: block;
+    margin-bottom: 15px;
+}
+
+.layui-text-muted {
+    color: #999;
+}
+
+/* 其他辅助样式 */
+.layui-col-space10 > * {
+    padding: 5px;
+}
+
+.layui-col-space15 > * {
+    padding: 7.5px;
+}
+
+/* 弹出层样式 */
+.layui-layer-title {
+    background-color: #fff !important;
+    color: var(--dark-color) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    font-weight: bold !important;
+}
+
+.layui-layer-setwin .layui-layer-close1 {
+    color: #888 !important;
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 768px) {
+    .layui-form-label {
+        text-align: left;
+        padding: 9px 0;
+        width: auto;
+        display: block;
+        float: none;
+    }
+
+    .layui-input-block {
+        margin-left: 0;
+    }
+
+    .layui-card-header {
+        padding: 12px 15px;
+    }
+
+    .layui-card-body {
+        padding: 15px;
+    }
+
+    .layui-table th,
+    .layui-table td {
+        padding: 8px 5px;
+    }
+
+    .layui-btn-group .layui-btn {
+        margin-bottom: 8px;
+    }
+
+    .layui-tab-title li {
+        padding: 0 10px;
+    }
+}
+ /* 页面整体背景 */
+ body {
+    background-color: #f8f8f8;
+    padding-bottom: 30px;
+}
+
+/* 自定义弹窗样式 */
+.custom-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+}
+
+.custom-modal-mask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.custom-modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    min-width: 500px;
+}
+
+.custom-modal-header {
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    background-color: #f8f8f8;
+    border-radius: 4px 4px 0 0;
+    cursor: move;
+    user-select: none;
+}
+
+.custom-modal-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.custom-modal-close {
+    position: absolute;
+    right: 15px;
+    top: 12px;
+    cursor: pointer;
+    font-size: 18px;
+    color: #999;
+}
+
+.custom-modal-close:hover {
+    color: #333;
+}
+
+.custom-modal-body {
+    padding: 20px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* 确保状态修改弹窗样式正确 */
+#changeStatusDialog {
+    display: none;
+}
+
+#changeStatusDialog.layui-show {
+    display: block !important;
+    position: static !important;
+    z-index: auto !important;
+    opacity: 1 !important;
+}
+
+.status-info-box {
+    background-color: #f5f5f5;
+    border: 1px solid #e6e6e6;
+    border-radius: 4px;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+}
+
+.status-info-box p {
+    margin: 5px 0;
+    line-height: 24px;
+}
+
+.status-info-box strong {
+    display: inline-block;
+    min-width: 70px;
+}
+
+/* 修复layui弹窗内容样式 */
+.layui-layer-content {
+    overflow: auto !important;
+}
+
+/* 确保调试信息区域样式 */
+#debugInfoContainer {
+    margin-top: 15px;
+    border-top: 1px dashed #e2e2e2;
+    padding-top: 15px;
+}
+
+#debugInfo {
+    font-size: 12px;
+    color: #999;
+    line-height: 1.5;
+    max-height: 150px;
+    overflow-y: auto;
+    background-color: #f9f9f9;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+/* 患者搜索结果项样式 */
+.patient-search-item {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+.search-item-hover {
+    background-color: #f2f8ff;
+}
+.search-item-name {
+    font-weight: bold;
+    color: #333;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.search-item-contact {
+    color: #999;
+    font-size: 12px;
+    margin-top: 4px;
+}
+.existing-relation {
+    background-color: #f0f9eb;
+}
+.relation-badge {
+    font-size: 12px;
+    background-color: #5FB878;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 5px;
+}
+
+/* 患者关联成功弹窗样式 */
+.patient-relation-success {
+    animation: successPop 0.3s ease-out forwards;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    box-shadow: 0 3px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.patient-relation-success .layui-layer-title {
+    background: linear-gradient(135deg, #1E9FFF, #009688) !important;
+    color: white !important;
+    font-size: 18px !important;
+    height: 50px !important;
+    line-height: 50px !important;
+    border: none !important;
+    font-weight: 600 !important;
+    padding-left: 20px !important;
+    text-align: center !important;
+}
+
+.patient-relation-success .layui-layer-content {
+    padding: 30px 20px !important;
+    font-size: 15px !important;
+    line-height: 1.6 !important;
+    color: #333 !important;
+    background-color: white !important;
+}
+
+.patient-relation-success .layui-layer-btn {
+    padding: 15px 20px 20px !important;
+    text-align: center !important;
+    border-top: 1px solid #f0f0f0 !important;
+    background-color: #f9f9f9 !important;
+}
+
+.patient-relation-success .layui-layer-btn a {
+    height: 38px !important;
+    line-height: 38px !important;
+    padding: 0 30px !important;
+    border-radius: 4px !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s !important;
+    background-color: #1E9FFF !important;
+    color: white !important;
+}
+
+.patient-relation-success .layui-layer-btn a:hover {
+    opacity: 0.9 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15) !important;
+}
+
+.patient-relation-success .success-icon {
+    color: #5FB878 !important;
+    font-size: 32px !important;
+    vertical-align: middle !important;
+    margin-right: 10px !important;
+    animation: zoomIn 0.5s ease !important;
+}
+
+.patient-relation-success .success-message {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 15px 0 25px !important;
+}
+
+.patient-relation-success .success-message-text {
+    font-size: 18px !important;
+    vertical-align: middle !important;
+    font-weight: 500 !important;
+    color: #333 !important;
+}
+
+/* 去除弹窗中的系统logo */
+.patient-relation-success .layui-layer-content img[src*="logo"] {
+    display: none !important;
+}
+
+/* 错误提示样式优化 */
+.error-message-dialog {
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.12) !important;
+    animation: errorPop 0.3s ease-out forwards !important;
+}
+
+.error-message-dialog .layui-layer-title {
+    background: linear-gradient(135deg, #FF5722, #FF9800) !important;
+    color: white !important;
+    height: 50px !important;
+    line-height: 50px !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    border: none !important;
+}
+
+.error-message-dialog .layui-layer-content {
+    padding: 25px 20px !important;
+    text-align: center !important;
+    font-size: 16px !important;
+    color: #333 !important;
+}
+
+.error-message-dialog .error-message {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 15px 0 !important;
+}
+
+/* 删除error-icon相关样式 */
+
+.error-message-dialog .error-text {
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    color: #333 !important;
+    padding: 5px 0 !important;
+    text-align: center !important;
+}
+
+.error-message-dialog .layui-layer-btn {
+    padding: 10px 20px 20px !important;
+    text-align: center !important;
+    background-color: #fff !important;
+}
+
+.error-message-dialog .layui-layer-btn a {
+    height: 38px !important;
+    line-height: 38px !important;
+    padding: 0 25px !important;
+    border-radius: 4px !important;
+    font-size: 15px !important;
+    background-color: #FF5722 !important;
+    color: white !important;
+    border: none !important;
+}
+
+@keyframes errorPop {
+    0% { transform: scale(0.9); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes successPop {
+    0% { transform: scale(0.8); opacity: 0; }
+    70% { transform: scale(1.05); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes zoomIn {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* 改进的表格样式 */
+.layui-table {
+    margin-top: 0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.layui-table th {
+    font-weight: 600;
+    background-color: #f9f9f9;
+    text-align: center;
+}
+
+/* 改进的状态标签样式 */
+.patient-status {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.patient-status .layui-badge {
+    display: inline-block;
+    min-width: 70px;
+    text-align: center;
+    font-weight: 500;
+    padding: 5px 8px;
+    border-radius: 12px;
+    font-size: 13px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* 统一操作按钮样式 */
+.patient-action-group {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.patient-action-group .layui-btn {
+    margin: 3px;
+    height: 30px;
+    line-height: 30px;
+}
+
+/* 统一行高 */
+.layui-table td {
+    height: 50px;
+    line-height: 20px;
+    padding: 8px 10px;
+    vertical-align: middle;
+}
+
+/* 患者姓名链接美化 */
+.patient-name-link {
+    color: #1E9FFF;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.patient-name-link:hover {
+    color: #0a90f0;
+    text-decoration: underline;
+}
+
+/* 改进统计卡片的样式 */
+.layui-card.layui-bg-blue,
+.layui-card.layui-bg-green,
+.layui-card.layui-bg-orange,
+.layui-card.layui-bg-red,
+.layui-card.layui-bg-cyan,
+.layui-card.layui-bg-gray {
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.layui-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* 性能优化：禁用不必要的动画和过渡效果 */
+.layui-btn, .layui-card, .patient-action-group .layui-btn {
+    transition: none !important;
+}
+
+/* 替代动画的提示效果 */
+.needs-attention {
+    border: 2px solid #FFB800;
+}
+
+/* 搜索结果项美化 */
+.patient-search-item {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+.patient-search-item:hover, .search-item-hover {
+    background-color: #f2f8ff;
+}
+
+.search-item-name {
+    font-weight: bold;
+    color: #333;
+    font-size: 14px;
+}
+
+.search-item-contact {
+    color: #999;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.layui-card .layui-card-body {
+    padding: 15px;
+    text-align: center;
+}
+
+.layui-card .layui-card-body p {
+    font-size: 14px;
+    margin-bottom: 8px;
+    opacity: 0.9;
+}
+
+.layui-card .layui-card-body h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* 患者统计标题 */
+.stats-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+/* 表格标题栏美化 */
+.layui-table thead tr {
+    background-color: #f2f2f2;
+}
+
+.layui-table thead th {
+    font-weight: bold;
+    color: #555;
+    border-bottom: 2px solid #e6e6e6;
+    padding: 12px 8px;
+}
+
+/* 改进搜索框样式 */
+.layui-input-group {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+#patientSearch {
+    height: 40px;
+    border: 1px solid #e6e6e6;
+    padding-left: 15px;
+}
+
+.layui-input-group .layui-input-suffix {
+    background-color: #f2f2f2;
+    padding: 0 15px;
+}
+
+.layui-input-group .layui-icon-search {
+    font-size: 18px;
+    color: #666;
+}
+
+/* 医疗工具区域样式优化 */
+.medical-tools-container {
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.medical-tools-container .layui-card-header {
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #eee;
+}
+
+.medical-tools-container .layui-btn-container {
+    padding: 10px 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.medical-tools-container .layui-btn {
+    margin: 5px 10px 5px 0;
+    height: 38px;
+    padding: 0 20px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.medical-tools-container .layui-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 按钮状态与悬停效果 */
+.layui-btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.layui-btn:hover {
+    opacity: 0.9;
+}
+
+.layui-btn:after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
+}
+
+.layui-btn:focus:not(:active)::after {
+    animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0);
+        opacity: 0.5;
+    }
+    20% {
+        transform: scale(25, 25);
+        opacity: 0.3;
+    }
+    100% {
+        opacity: 0;
+        transform: scale(40, 40);
+    }
+}
+
+/* 预约待处理数字样式美化 */
+.pending-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    min-width: 18px;
+    height: 18px;
+    line-height: 18px;
+    padding: 0 5px;
+    font-size: 12px;
+    text-align: center;
+    background-color: #FF5722;
+    color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.attention-needed {
+    position: relative;
+}
+
+/* 禁用所有动画和悬停效果 */
+.layui-card:hover {
+    transform: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.layui-card, 
+.layui-btn,
+.medical-tools-container .layui-btn {
+    transition: none !important;
+}
+
+.medical-tools-container .layui-btn:hover,
+.layui-btn:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* 添加备注对话框专用样式 */
+#addNoteDialog {
+    display: none !important; /* 确保页面加载时不显示 */
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    background-color: #fff;
+    border-radius: 4px;
+}
+
+/* 确保弹窗内文本域样式正确 */
+#addNoteForm .layui-textarea {
+    height: 120px;
+    resize: none;
+    width: 100%;
+}
+
+/* 确保label和输入区域正确对齐 */
+#addNoteForm .layui-form-label {
+    width: 100px;
+    text-align: right;
+    font-weight: 500;
+}
+
+#addNoteForm .layui-input-block {
+    margin-left: 130px;
+}
+
+/* 确保按钮居中对齐 */
+#addNoteForm .layui-btn-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* 确保layui弹窗层样式正确 */
+.layui-layer-dialog {
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* 确保弹窗标题栏样式正确 */
+.layui-layer-title {
+    background-color: #f8f8f8 !important;
+    border-bottom: 1px solid #eee !important;
+}
+
+/* 确保弹窗内容区域样式正确 */
+.layui-layer-content {
+    padding: 0 !important; /* 移除内容区域的padding，由对话框自身控制 */
+    overflow: visible !important;
+    min-height: 100px !important; /* 确保内容区域有足够高度 */
+}
+
+/* 重置一些可能影响弹窗的样式 */
+.layui-layer-page .layui-layer-content {
+    display: block !important; /* 覆盖flex布局 */
+    height: auto !important;
+}
+
+/* 停用可能导致弹窗闪烁的过渡效果 */
+.layui-layer, .layui-layer-shade {
+    transition: none !important;
+}
+
+/* 备注提示框美化样式 */
+.layui-layer-dialog.layui-layer-molv {
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2) !important;
+}
+
+.layui-layer-dialog.layui-layer-molv .layui-layer-content {
+    border-radius: 0 0 8px 8px !important;
+    overflow: hidden !important;
+}
+
+/* 备注对话框样式 */
+.layui-layer-page .layui-layer-title {
+    background-color: #f8f8f8 !important;
+    color: #333 !important;
+    font-weight: 600 !important;
+    font-size: 16px !important;
+    height: 50px !important;
+    line-height: 50px !important;
+    border-bottom: 1px solid #eee !important;
+}
+
+.layui-textarea:focus {
+    border-color: #1E9FFF !important;
+    box-shadow: 0 0 0 2px rgba(30, 159, 255, 0.2) !important;
+}
+
+#submitNoteBtn:hover {
+    background-color: #0e90d2 !important;
+    box-shadow: 0 2px 8px rgba(30, 159, 255, 0.3) !important;
+}
+
+#cancelNoteBtn:hover {
+    color: #666 !important;
+    border-color: #d2d2d2 !important;
+}
+
+/* 成功提示框动画效果 */
+@keyframes successPulse {
+    0% { transform: scale(0.8); opacity: 0; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.layui-layer-dialog.layui-layer-molv {
+    animation: successPulse 0.3s ease-out forwards;
+}

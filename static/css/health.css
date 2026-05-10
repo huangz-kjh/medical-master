@@ -1,0 +1,207 @@
+* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #0a1929;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        .header {
+            background: linear-gradient(90deg, #0c293d 0%, #154964 100%);
+            height: 70px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .nav {
+            display: flex;
+        }
+        .nav ul {
+            display: flex;
+            list-style: none;
+        }
+        .nav ul li {
+            margin: 0 15px;
+            position: relative;
+        }
+        .nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 15px;
+            padding: 10px 5px;
+            transition: 0.3s;
+            display: block;
+        }
+        .nav ul li.nav_active a, .nav ul li a:hover {
+            color: #4fc3f7;
+        }
+        .nav ul li.nav_active::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #4fc3f7;
+        }
+        .header_center {
+            display: flex;
+            align-items: center;
+        }
+        .header_center h2 {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 300;
+        }
+        .header_center h2 strong {
+            font-weight: 600;
+        }
+        .con {
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .div_any01 {
+            margin-bottom: 20px;
+        }
+.div_any_child {
+    background: linear-gradient(180deg, #12283f 0%, #0a1929 100%);
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    margin-right: 20px;
+    height: 100%;  /* 确保高度能自适应 */
+    position: relative;
+    overflow: hidden; /* 防止内容溢出 */
+}
+
+#cognitiveRadarChart, #cognitiveLineChart, #biomarkersChart, #cognitiveBarChart, #cognitiveTrendChart, #ageRiskChart {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+
+        .div_any_title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #eee;
+            display: flex;
+            align-items: center;
+        }
+        .div_any_title img {
+            width: 24px;
+            margin-right: 8px;
+        }
+        .table_p {
+            width: 100%;
+            height: 350px;
+            overflow-y: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table th, table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #1e3a5a;
+        }
+        table th {
+            background-color: #1e3a5a;
+            color: #eee;
+        }
+        table tr:hover {
+            background-color: #12283f;
+        }
+        .status-indicator {
+            display: flex;
+            margin-top: 15px;
+        }
+        .status-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 30px;
+        }
+        .status-label {
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #eee;
+        }
+        .status-value {
+            font-size: 22px;
+            font-weight: 600;
+        }
+        .patient-info {
+            background: linear-gradient(90deg, #123456 0%, #234567 100%);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .patient-info-item {
+            padding: 0px 20px;
+            border-right: 1px solid #345678;
+        }
+        .patient-info-item:last-child {
+            border-right: none;
+        }
+        .patient-info-label {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        .patient-info-value {
+            font-size: 16px;
+            color: #fff;
+            font-weight: 500;
+        }
+        .risk-indicator {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        .risk-low {
+            background-color: #43a047;
+            color: #fff;
+        }
+        .risk-medium {
+            background-color: #fb8c00;
+            color: #fff;
+        }
+        .risk-high {
+            background-color: #e53935;
+            color: #fff;
+        }
+        .recommendation-list {
+            margin-top: 15px;
+        }
+        .recommendation-item {
+            padding: 10px;
+            border-bottom: 1px solid #1e3a5a;
+        }
+        .recommendation-item:last-child {
+            border-bottom: none;
+        }
+        .recommendation-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #4fc3f7;
+            margin-bottom: 5px;
+        }
+        .recommendation-desc {
+            font-size: 14px;
+            color: #ccc;
+        }

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}医疗影像平台{% endblock %}</title>
+
+    <!-- 引入Layui框架 -->
+    <link href="https://www.layuicdn.com/layui-v2.6.8/css/layui.css" rel="stylesheet"/>
+    <script src="https://www.layuicdn.com/layui-v2.6.8/layui.js"></script>
+    <!-- 引入FontAwesome图标 -->
+    <link href="../static/download_style/css/all.min.css" rel="stylesheet"/>
+    <!-- Font Awesome 5 兼容修复 -->
+    <link href="../static/download_style/css/fa5-fix.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- jQuery -->
+    <script src="../static/download_style/js/jquery.min.js"></script>
+    <!-- 自定义样式 -->
+    <style>
+        body {
+            padding: 15px;
+            background-color: #f2f2f2;
+        }
+
+        .layui-card {
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .05);
+        }
+
+        .layui-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+
+    {% block head %}{% endblock %}
+
+    <!-- 字体图标备用方案 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 检查字体图标是否正确加载
+            setTimeout(function () {
+                var testIcon = document.createElement('i');
+                testIcon.className = 'fas fa-user';
+                testIcon.style.visibility = 'hidden';
+                document.body.appendChild(testIcon);
+
+                var iconStyle = window.getComputedStyle(testIcon);
+                var isFontLoaded = iconStyle.fontFamily.includes('Font Awesome') ||
+                    iconStyle.fontFamily.includes('FontAwesome');
+
+                if (!isFontLoaded) {
+                    console.log('字体图标未正确加载，加载备用方案');
+                    // 加载备用CSS
+                    var link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = '../static/download_style/css/font-awesome-4.7.0.min.css';
+                    document.head.appendChild(link);
+                }
+
+                document.body.removeChild(testIcon);
+            }, 500);
+        });
+    </script>
+</head>
+<body>
+{% block content %}{% endblock %}
+
+<script>
+    layui.use(['layer', 'form', 'element'], function () {
+        var layer = layui.layer;
+        var form = layui.form;
+        var element = layui.element;
+
+        // 初始化表单元素
+        form.render();
+    });
+</script>
+
+{% block scripts %}{% endblock %}
+
+<!-- 字体图标加载检测 -->
+<script src="{{ url_for('static', filename='js/fa_init.js') }}"></script>
+</body>
+</html> 

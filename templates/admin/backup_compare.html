@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>备份比较</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href="//unpkg.com/layui@2.10.1/dist/css/layui.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/layui/2.5.5/layui.min.js"></script>
+    <style>
+        .layui-card {
+            margin-bottom: 15px;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .05);
+        }
+
+        .compare-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 2px;
+            background-color: #f8f8f8;
+        }
+
+        .compare-item-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .compare-diff-large {
+            color: #FF5722;
+        }
+
+        .compare-diff-medium {
+            color: #FFB800;
+        }
+
+        .compare-diff-small {
+            color: #5FB878;
+        }
+
+        .backup-detail {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-left: 5px solid #1E9FFF;
+            background-color: #f8f8f8;
+        }
+
+        .backup-a-label {
+            color: #1E9FFF;
+        }
+
+        .backup-b-label {
+            color: #5FB878;
+        }
+    </style>
+
+    <!-- 字体图标备用方案 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 检查字体图标是否正确加载
+            setTimeout(function () {
+                var testIcon = document.createElement('i');
+                testIcon.className = 'fas fa-user';
+                testIcon.style.visibility = 'hidden';
+                document.body.appendChild(testIcon);
+
+                var iconStyle = window.getComputedStyle(testIcon);
+                var isFontLoaded = iconStyle.fontFamily.includes('Font Awesome') ||
+                    iconStyle.fontFamily.includes('FontAwesome');
+
+                if (!isFontLoaded) {
+                    console.log('字体图标未正确加载，加载备用方案');
+                    // 加载备用CSS
+                    var link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = '../static/download_style/css/font-awesome-4.7.0.min.css';
+                    document.head.appendChild(link);
+                }
+
+                document.body.removeChild(testIcon);
+            }, 500);
+        });
+    </script>
+</head>
+
+<body>
+<div class="layui-layout layui-layout-admin">
+    <!-- 顶部导航 -->
+    <div class="layui-header">
+        <div class="layui-logo">医疗系统管理后台</div>
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <img src="/static/img/icon.png" class="layui-nav-img">
+                    {{ current_user.username }}
+                </a>
+                <dl class="layui-nav-child">
+                    <dd><a href="{{ url_for('logout') }}">退出登录</a></dd>
+                </dl>
+            </li>
+        </ul>
+    </div>
+
+    <!-- 左侧菜单 -->
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <ul class="layui-nav layui-nav-tree" data-lay-filter="test">
+                <li class="layui-nav-item {{ 'layui-this' if request.endpoint == 'admin_index' else '' }}">
+                    <a href="{{ url_for('admin_index') }}"><i class="layui-icon">&#xe68e;</i> 首页</a>
+                </li>
+                <li class="layui-nav-item {{ 'layui-nav-itemed' if request.endpoint in ['admin_user_list','admin_user_add'] else '' }}">
+                    <a href="javascript:;">用户管理</a>
+                    <dl class="layui-nav-child">
+                        <dd class="{{ 'layui-this' if request.endpoint == 'admin_user_list' else '' }}"><a
+                                href="{{ url_for('admin_user_list') }}">用户列表</a></dd>
+                        <dd class="{{ 'layui-this' if request.endpoint == 'admin_user_add' else '' }}"><a
+                                href="{{ url_for('admin_user_add') }}">添加用户</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item {{ 'layui-nav-itemed' if request.endpoint in ['admin_system_config','admin_logs','admin_backup'] else '' }}">
+                    <a href="javascript:;">系统设置</a>
+                    <dl class="layui-nav-child">
+                        <dd class="{{ 'layui-this' if request.endpoint == 'admin_system_config' else '' }}"><a
+                                href="{{ url_for('admin_system_config') }}">系统配置</a></dd>
+                        <dd class="{{ 'layui-this' if request.endpoint == 'admin_logs' else '' }}"><a
+                                href="{{ url_for('admin_logs') }}">操作日志</a></dd>
+                        <dd class="{{ 'layui-this' if request.endpoint == 'admin_backup' else '' }}"><a
+                                href="{{ url_for('admin_backup') }}">数据备份</a></dd>
+                    </dl>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+
+    <!-- 内容主体区域 -->
+    <div class="layui-body">
+        <div style="padding: 15px;">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    <span>备份比较结果</span>
+                    <div class="layui-btn-group" style="float: right;">
+                        <a href="{{ url_for('admin_backup') }}" class="layui-btn layui-btn-sm">
+                            <i class="layui-icon">&#xe65c;</i> 返回备份列表
+                        </a>
+                    </div>
+                </div>
+                <div class="layui-card-body">
+                    <!-- 比较信息概览 -->
+                    <div class="layui-row">
+                        <div class="layui-col-md6">
+                            <div class="backup-detail">
+                                <h3 class="backup-a-label">备份 A: {{ comparison.backup_a }}</h3>
+                                <p>大小: {{ comparison.file_a_size }} MB</p>
+                                <p>创建时间: {{ comparison.file_a_time }}</p>
+                            </div>
+                        </div>
+                        <div class="layui-col-md6">
+                            <div class="backup-detail">
+                                <h3 class="backup-b-label">备份 B: {{ comparison.backup_b }}</h3>
+                                <p>大小: {{ comparison.file_b_size }} MB</p>
+                                <p>创建时间: {{ comparison.file_b_time }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 差异信息 -->
+                    <fieldset class="layui-elem-field">
+                        <legend>差异分析</legend>
+                        <div class="layui-field-box">
+                            <div class="compare-item">
+                                <div class="compare-item-title">大小差异:</div>
+                                {% if comparison.size_diff_percent > 10 %}
+                                <div class="compare-diff-large">相差 {{ comparison.size_diff }} MB ({{
+                                    comparison.size_diff_percent }}%)
+                                </div>
+                                {% elif comparison.size_diff_percent > 5 %}
+                                <div class="compare-diff-medium">相差 {{ comparison.size_diff }} MB ({{
+                                    comparison.size_diff_percent }}%)
+                                </div>
+                                {% else %}
+                                <div class="compare-diff-small">相差 {{ comparison.size_diff }} MB ({{
+                                    comparison.size_diff_percent }}%)
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="compare-item">
+                                <div class="compare-item-title">时间差异:</div>
+                                {% if comparison.time_diff_days > 30 %}
+                                <div class="compare-diff-large">相差 {{ comparison.time_diff_days }} 天</div>
+                                {% elif comparison.time_diff_days > 7 %}
+                                <div class="compare-diff-medium">相差 {{ comparison.time_diff_days }} 天</div>
+                                {% else %}
+                                <div class="compare-diff-small">相差 {{ comparison.time_diff_days }} 天</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="compare-item">
+                                <div class="compare-item-title">变更说明:</div>
+                                <div>
+                                    {% if comparison.size_diff_percent > 10 %}
+                                    <p>两个备份文件差异较大，可能发生了大量数据变更。</p>
+                                    {% elif comparison.size_diff_percent > 5 %}
+                                    <p>两个备份文件存在一定差异，表明有一些数据变更。</p>
+                                    {% else %}
+                                    <p>两个备份文件差异较小，可能只有少量数据变更。</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- 还原选项 -->
+                    <div class="layui-form">
+                        <fieldset class="layui-elem-field">
+                            <legend>操作选项</legend>
+                            <div class="layui-field-box">
+                                <div class="layui-form-item">
+                                    <div class="layui-btn-group">
+                                        <button type="button" class="layui-btn layui-btn-normal"
+                                                onclick="confirmRestore('{{ comparison.backup_a }}')">
+                                            <i class="layui-icon">&#xe669;</i> 还原备份 A
+                                        </button>
+                                        <button type="button" class="layui-btn layui-btn-normal"
+                                                onclick="confirmRestore('{{ comparison.backup_b }}')">
+                                            <i class="layui-icon">&#xe669;</i> 还原备份 B
+                                        </button>
+                                        <button type="button" class="layui-btn" onclick="downloadCompareReport()">
+                                            <i class="layui-icon">&#xe67d;</i> 导出比较报告
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 恢复确认表单 -->
+<form id="restoreForm" method="post" style="display: none;"></form>
+
+<script>
+    layui.use(['element', 'layer'], function () {
+        var element = layui.element;
+        var layer = layui.layer;
+    });
+
+    // 确认恢复备份
+    function confirmRestore(filename) {
+        layui.layer.confirm('确定要恢复此备份吗？<br><span style="color: red;">警告：此操作将覆盖当前所有数据！</span>', {
+            btn: ['确定恢复', '取消'],
+            icon: 3,
+            title: '恢复确认'
+        }, function () {
+            var form = document.getElementById('restoreForm');
+            form.action = "{{ url_for('admin_restore_backup', filename='') }}" + filename;
+            form.submit();
+        });
+    }
+
+    // 下载文件名安全处理
+    function safeFilename(name) {
+        return name.replace(/[^a-z0-9]/gi, '_');
+    }
+
+    // 下载比较报告
+    function downloadCompareReport() {
+        var reportContent = {
+            backup_a: "{{ comparison.backup_a }}",
+            backup_b: "{{ comparison.backup_b }}",
+            file_a_size: "{{ comparison.file_a_size }} MB",
+            file_b_size: "{{ comparison.file_b_size }} MB",
+            file_a_time: "{{ comparison.file_a_time }}",
+            file_b_time: "{{ comparison.file_b_time }}",
+            size_diff: "{{ comparison.size_diff }} MB ({{ comparison.size_diff_percent }}%)",
+            time_diff: "{{ comparison.time_diff_days }} 天",
+            report_time: new Date().toLocaleString()
+        };
+
+        var reportText = "备份比较报告\n\n";
+        reportText += "生成时间: " + reportContent.report_time + "\n\n";
+        reportText += "备份 A: " + reportContent.backup_a + "\n";
+        reportText += "大小: " + reportContent.file_a_size + "\n";
+        reportText += "创建时间: " + reportContent.file_a_time + "\n\n";
+        reportText += "备份 B: " + reportContent.backup_b + "\n";
+        reportText += "大小: " + reportContent.file_b_size + "\n";
+        reportText += "创建时间: " + reportContent.file_b_time + "\n\n";
+        reportText += "差异分析:\n";
+        reportText += "大小差异: " + reportContent.size_diff + "\n";
+        reportText += "时间差异: " + reportContent.time_diff + "\n\n";
+        reportText += "备注: ";
+
+        // 使用数字字符串转换为数字，避免模板语法错误
+        var size_diff_percent = parseFloat("{{ comparison.size_diff_percent }}");
+        if (size_diff_percent > 10) {
+            reportText += "两个备份文件差异较大，可能发生了大量数据变更。";
+        } else if (size_diff_percent > 5) {
+            reportText += "两个备份文件存在一定差异，表明有一些数据变更。";
+        } else {
+            reportText += "两个备份文件差异较小，可能只有少量数据变更。";
+        }
+
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(reportText));
+        element.setAttribute('download', 'backup_compare_report_' + safeFilename(reportContent.backup_a) + '_' + safeFilename(reportContent.backup_b) + '.txt');
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+
+        layui.layer.msg('比较报告已下载');
+    }
+</script>
+</body>
+
+</html> 

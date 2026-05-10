@@ -1,0 +1,83 @@
+{% if pagination and pagination.items %}
+<table class="appointment-table">
+  <thead>
+    <tr>
+      <th>预约编号</th>
+      <th>日期与时间</th>
+      <th>医生</th>
+      <th>科室</th>
+      <th>类型</th>
+      <th>状态</th>
+      {% if role == 'doctor' %}
+      <th>患者</th>
+      {% endif %}
+      <th>操作</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for appt in pagination.items %}
+    <tr>
+      <td>{{ appt.code or 'N/A' }}</td>
+      <td>
+        {{ appt.appointment_date.strftime('%Y-%m-%d') }} {{ appt.time_slot.display_name if
+        appt.time_slot else '' }}
+      </td>
+      <td>{{ appt.doctor.real_name if appt.doctor else '未知医生' }}</td>
+      <td>{{ appt.department.display_name if appt.department else 'N/A' }}</td>
+      <td>{{ appt.appointment_type.display_name if appt.appointment_type else 'N/A' }}</td>
+      <td>
+        <span class="status-badge status-{{ appt.status.name.lower() }}"
+          >{{ appt.status.display_name if appt.status else '未知' }}</span
+        >
+      </td>
+      {% if role == 'doctor' %}
+      <td>{{ appt.patient.name if appt.patient else '未知患者' }}</td>
+      {% endif %}
+      <td>
+        <button class="btn btn-action btn-detail" data-id="{{ appt.appointment_id }}">详情</button>
+        {% if appt.status.name in ['PENDING', 'CONFIRMED'] and role == 'patient' %}
+        <button class="btn btn-action btn-cancel" data-id="{{ appt.appointment_id }}">取消</button>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="pagination">
+  {% if pagination.has_prev %}
+  <a
+    href="/appointments?page={{ pagination.prev_num }}&status_group={{ status_group }}&per_page={{ per_page }}"
+    class="no-global-load"
+    >&laquo; 上一页</a
+  >
+  {% else %}
+  <span class="disabled">&laquo; 上一页</span>
+  {% endif %} {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1,
+  right_current=2) %} {% if page_num %} {% if pagination.page == page_num %}
+  <span class="active">{{ page_num }}</span>
+  {% else %}
+  <a
+    href="/appointments?page={{ page_num }}&status_group={{ status_group }}&per_page={{ per_page }}"
+    class="no-global-load"
+    >{{ page_num }}</a
+  >
+  {% endif %} {% else %}
+  <span class="disabled">...</span>
+  {% endif %} {% endfor %} {% if pagination.has_next %}
+  <a
+    href="/appointments?page={{ pagination.next_num }}&status_group={{ status_group }}&per_page={{ per_page }}"
+    class="no-global-load"
+    >下一页 &raquo;</a
+  >
+  {% else %}
+  <span class="disabled">下一页 &raquo;</span>
+  {% endif %}
+</div>
+
+{% else %}
+<div class="empty-state">
+  <div class="empty-state-icon"><i class="fas fa-calendar-alt"></i></div>
+  <p>这里没有预约记录。</p>
+</div>
+{% endif %}

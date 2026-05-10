@@ -1,0 +1,462 @@
+/* 预约管理页面样式 - 简约严谨风格 */
+
+/* 全局样式 */
+body {
+    font-family: "Microsoft YaHei", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    color: #333;
+    background-color: #f5f7fa;
+}
+
+/* 布局容器 */
+.appointment-container {
+    padding: 20px 0;
+}
+
+/* 卡片样式 */
+.layui-card {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.layui-card-header {
+    height: auto;
+    line-height: 32px;
+    padding: 15px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    font-weight: 500;
+}
+
+.layui-card-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.layui-card-header h2 .layui-icon {
+    margin-right: 8px;
+    font-size: 18px;
+}
+
+.layui-card-body {
+    padding: 20px;
+}
+
+/* 统计卡片样式 */
+.layui-bg-blue, .layui-bg-orange, .layui-bg-green, .layui-bg-gray {
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.layui-bg-blue {
+    background-color: #4dabf7 !important;
+}
+
+.layui-bg-orange {
+    background-color: #fd7e14 !important;
+}
+
+.layui-bg-green {
+    background-color: #20c997 !important;
+}
+
+.layui-bg-gray {
+    background-color: #6c757d !important;
+}
+
+.stat-title {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 10px;
+}
+
+.stat-value {
+    font-size: 28px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 5px;
+}
+
+.stat-icon {
+    position: absolute;
+    right: 20px;
+    bottom: 15px;
+    font-size: 48px;
+    color: rgba(255, 255, 255, 0.2);
+}
+
+/* 预约卡片样式 */
+.appointment-card {
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    background-color: #fff;
+    margin-bottom: 20px;
+    transition: all 0.3s;
+}
+
+.appointment-card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.appointment-card-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.appointment-patient {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.appointment-patient a {
+    color: #1e88e5;
+    text-decoration: none;
+}
+
+.appointment-card-body {
+    padding: 20px;
+}
+
+.appointment-details {
+    margin-bottom: 20px;
+}
+
+.appointment-detail-item {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.appointment-detail-item .layui-icon {
+    width: 20px;
+    margin-right: 8px;
+    color: #999;
+}
+
+.appointment-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* 空状态展示 */
+.empty-state {
+    text-align: center;
+    padding: 40px 0;
+}
+
+.empty-state-icon {
+    font-size: 60px;
+    color: #d1d1d1;
+    margin-bottom: 20px;
+}
+
+.empty-state-text {
+    font-size: 16px;
+    color: #999;
+}
+
+/* 状态标签 */
+.layui-badge {
+    border-radius: 12px;
+    padding: 0 10px;
+    height: 24px;
+    line-height: 24px;
+}
+
+.status-label {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: #fff;
+}
+
+.status-pending {
+    background-color: #fd7e14;
+}
+
+.status-confirmed {
+    background-color: #20c997;
+}
+
+.status-completed {
+    background-color: #4dabf7;
+}
+
+.status-cancelled {
+    background-color: #6c757d;
+}
+
+/* 表单样式 */
+.appointment-form {
+    padding: 10px 0;
+}
+
+.layui-form-label {
+    width: 90px;
+}
+
+.layui-input-block {
+    margin-left: 120px;
+}
+
+.layui-form-item {
+    margin-bottom: 20px;
+}
+
+.layui-input, .layui-textarea, .layui-select {
+    border-radius: 3px;
+}
+
+/* 历史预约表格 */
+.layui-table {
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.layui-table thead tr {
+    background-color: #f8f9fa;
+}
+
+.layui-text-center {
+    text-align: center;
+}
+
+/* 日历样式 */
+.calendar-container {
+    background-color: #fff;
+    border-radius: 4px;
+    padding: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    margin-bottom: 15px;
+}
+
+.calendar-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.calendar-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.calendar-day-header {
+    text-align: center;
+    padding: 10px 0;
+    font-weight: 600;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.calendar-day {
+    min-height: 100px;
+    padding: 5px;
+    border: 1px solid #eee;
+    border-radius: 3px;
+}
+
+.calendar-day-number {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.calendar-day.today {
+    background-color: #e6f7ff;
+    border-color: #91d5ff;
+}
+
+.calendar-day.other-month {
+    opacity: 0.4;
+}
+
+.calendar-day-events {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.calendar-event {
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 弹窗样式 */
+.layui-layer-title {
+    font-weight: 600 !important;
+    background-color: #f8f9fa !important;
+}
+
+.layui-layer-btn {
+    text-align: center !important;
+    padding: 15px 0 25px !important;
+}
+
+/* 预约详情弹窗样式 */
+.appointment-detail-content {
+    padding: 0;
+}
+
+.appointment-detail-header {
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.appointment-detail-patient {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.appointment-detail-info {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.appointment-detail-info-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.appointment-detail-label {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 5px;
+}
+
+.appointment-detail-value {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.appointment-detail-footer {
+    padding: 20px;
+    text-align: center;
+    border-top: 1px solid #f0f0f0;
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 992px) {
+    .layui-input-block {
+        margin-left: 110px;
+    }
+
+    .appointment-detail-info {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .appointment-actions {
+        flex-direction: column;
+    }
+
+    .appointment-actions .layui-btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .layui-input-block {
+        margin-left: 100px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .layui-form-label {
+        width: 70px;
+        padding: 9px 5px;
+    }
+
+    .layui-input-block {
+        margin-left: 85px;
+    }
+}
+
+/* 增强交互体验 */
+.layui-btn {
+    border-radius: 3px;
+    transition: all 0.3s;
+}
+
+.layui-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.layui-link {
+    color: #1890ff;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.layui-link:hover {
+    color: #40a9ff;
+    text-decoration: underline;
+}
+
+/* 折叠面板样式调整 */
+.layui-collapse {
+    border: none;
+    border-radius: 4px;
+    margin-top: 15px;
+    border: 1px solid #e9ecef;
+}
+
+.layui-colla-title {
+    background-color: #f8f9fa;
+}
+
+.layui-colla-item:last-child {
+    border-bottom: none;
+}
+
+/* 确保表单输入对齐 */
+.layui-form-text .layui-textarea {
+    min-height: 80px;
+}
+
+/* 选项卡样式 */
+.layui-tab-brief > .layui-tab-title .layui-this {
+    color: #1890ff;
+}
+
+.layui-tab-brief > .layui-tab-title .layui-this:after {
+    border-bottom: 2px solid #1890ff;
+}
+
+.layui-tab-brief > .layui-tab-more li.layui-this:after,
+.layui-tab-brief > .layui-tab-title .layui-this:after {
+    border: none;
+    border-bottom: 2px solid #1890ff;
+}

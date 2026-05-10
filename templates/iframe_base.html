@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <!-- 确保jQuery作为第一个脚本加载 -->
+    <script
+      crossorigin="anonymous"
+      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+      src="../static/download_style/js/jquery-3.6.0.min.js"
+    ></script>
+    <!-- 备用jQuery加载方案 -->
+    <script>
+      if (typeof jQuery === 'undefined') {
+        document.write(
+          '<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"><\/script>'
+        )
+      }
+    </script>
+    <!-- 添加Font Awesome图标 -->
+    <link href="../static/download_style/css/all.min.css" rel="stylesheet" />
+    <!-- Font Awesome 5 兼容修复 -->
+    <link href="../static/download_style/css/fa5-fix.css" rel="stylesheet" />
+    <!-- 在Font Awesome加载失败时提供备用图标样式 -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        setTimeout(function () {
+          // 检查Font Awesome是否已正确加载
+          const isFontAwesomeLoaded = (function () {
+            const span = document.createElement('span')
+            span.className = 'fas fa-spinner'
+            span.style.visibility = 'hidden'
+            document.body.appendChild(span)
+            const result = window.getComputedStyle(span).fontFamily.includes('Font Awesome')
+            document.body.removeChild(span)
+            return result
+          })()
+
+          if (!isFontAwesomeLoaded) {
+            console.log('Font Awesome未能加载，使用内联样式')
+            // 如果Font Awesome未能加载，添加基本图标的内联样式
+            const style = document.createElement('style')
+            style.textContent = `
+                    @font-face {
+                        font-family: 'DashboardIcons';
+                        src: local('Arial');
+                        font-weight: normal;
+                    }
+                    .fa, .fas, .far, .fal, .fab {
+                        font-family: 'DashboardIcons', Arial, sans-serif;
+                        -moz-osx-font-smoothing: grayscale;
+                        -webkit-font-smoothing: antialiased;
+                        display: inline-block;
+                        font-style: normal;
+                        font-variant: normal;
+                        text-rendering: auto;
+                        line-height: 1;
+                    }
+                    .fa-spinner:before {
+                        content: "↻";
+                    }
+                    .fa-exclamation-circle:before {
+                        content: "!";
+                    }
+                    .fa-calendar-check:before {
+                        content: "✓";
+                    }
+                    .fa-sync:before {
+                        content: "↻";
+                    }
+                    .fa-spin {
+                        animation: fa-spin 2s infinite linear;
+                    }
+                    @keyframes fa-spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                `
+            document.head.appendChild(style)
+          }
+        }, 1000)
+      })
+    </script>
+    <!-- 添加其他全局资源 -->
+    <!-- Layui框架 - 常用UI组件 -->
+    <link href="https://www.layuicdn.com/layui-v2.6.8/css/layui.css" rel="stylesheet" />
+    <script src="https://www.layuicdn.com/layui-v2.6.8/layui.js"></script>
+
+    <!-- Font Awesome图标库 -->
+    <link href="../static/download_style/css/all.min.css" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Font Awesome 5 兼容修复 -->
+    <link href="../static/download_style/css/fa5-fix.css" rel="stylesheet" />
+
+    <!-- ECharts库（直接本地加载） -->
+    <script src="{{ url_for('static', filename='download_style/js/echarts.min.js') }}"></script>
+    <script>
+      // 检查ECharts是否加载成功
+      if (typeof echarts === 'undefined') {
+        console.error(
+          'ECharts库未能从本地加载！请检查路径：/static/download_style/js/echarts.min.js'
+        )
+      }
+    </script>
+
+    <!-- 其他站点全局头部资源 -->
+    {% block head %}{% endblock %}
+
+    <!-- 字体图标备用方案 -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // 检查字体图标是否正确加载
+        setTimeout(function () {
+          var testIcon = document.createElement('i')
+          testIcon.className = 'fas fa-user'
+          testIcon.style.visibility = 'hidden'
+          document.body.appendChild(testIcon)
+
+          var iconStyle = window.getComputedStyle(testIcon)
+          var isFontLoaded =
+            iconStyle.fontFamily.includes('Font Awesome') ||
+            iconStyle.fontFamily.includes('FontAwesome')
+
+          if (!isFontLoaded) {
+            console.log('字体图标未正确加载，加载备用方案')
+            // 加载备用CSS
+            var link = document.createElement('link')
+            link.rel = 'stylesheet'
+            link.href = '../static/download_style/css/font-awesome-4.7.0.min.css'
+            document.head.appendChild(link)
+          }
+
+          document.body.removeChild(testIcon)
+        }, 500)
+      })
+    </script>
+  </head>
+  <body>
+    <!-- 主内容区域 -->
+    <div class="iframe-content">
+      {% block content %}
+      <!-- 在继承此模板的页面中替换此块 -->
+      {% endblock %}
+    </div>
+    <!-- 页面特定的JavaScript -->
+    {% block scripts %}
+    <!-- 在继承此模板的页面中添加特定的脚本 -->
+    {% endblock %}
+
+    <style>
+      /* iframe内容基础样式 */
+      .iframe-content {
+        padding: 15px;
+        min-height: 100%;
+        width: 100%;
+        box-sizing: border-box;
+      }
+    </style>
+    <!-- 确保所有页面正确加载 -->
+    <script>
+      // 页面加载完成后检查jQuery是否可用
+      document.addEventListener('DOMContentLoaded', function () {
+        if (typeof jQuery === 'undefined') {
+          console.error('jQuery未能在iframe_base.html中加载，尝试手动加载')
+          var script = document.createElement('script')
+          script.src = 'https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js'
+          script.onload = function () {
+            console.log('jQuery已在iframe_base.html中手动加载成功')
+            // 如果页面含有initPage函数，调用它
+            if (typeof initPage === 'function') {
+              initPage()
+            }
+          }
+          document.head.appendChild(script)
+        } else {
+          console.log('jQuery在iframe_base.html中已正确加载')
+          // 如果页面含有initPage函数，调用它
+          if (typeof initPage === 'function') {
+            initPage()
+          }
+        }
+      })
+    </script>
+
+    <!-- 字体图标加载检测 -->
+    <script src="{{ url_for('static', filename='js/fa_init.js') }}"></script>
+  </body>
+</html>

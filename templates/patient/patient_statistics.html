@@ -1,0 +1,306 @@
+{% extends 'layout.html' %}
+
+{% block title %}患者数据统计分析 - 医疗影像平台{% endblock %}
+
+{% block content %}
+<div class="layui-container">
+    <div class="layui-row layui-col-space15">
+        <!-- 头部统计卡片 -->
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    <h2>患者数据分析</h2>
+                </div>
+                <div class="layui-card-body">
+                    <div class="layui-row layui-col-space10">
+                        <div class="layui-col-md3">
+                            <div class="layui-card layui-bg-blue">
+                                <div class="layui-card-body">
+                                    <p>患者总数</p>
+                                    <h3>{{ total_patients }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-md3">
+                            <div class="layui-card layui-bg-green">
+                                <div class="layui-card-body">
+                                    <p>男性患者</p>
+                                    <h3>{{ male_count }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-md3">
+                            <div class="layui-card layui-bg-cyan">
+                                <div class="layui-card-body">
+                                    <p>女性患者</p>
+                                    <h3>{{ female_count }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-md3">
+                            <div class="layui-card layui-bg-orange">
+                                <div class="layui-card-body">
+                                    <p>治疗中患者</p>
+                                    <h3>{{ status_counts['治疗中'] }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 报表生成功能 -->
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    <h3>数据报表生成</h3>
+                </div>
+                <div class="layui-card-body">
+                    <div class="layui-btn-container">
+                        <a href="{{ url_for('generate_patient_report', type='general') }}" class="layui-btn layui-btn-normal">
+                            <i class="layui-icon">&#xe67d;</i> 导出患者总体报表
+                        </a>
+                        <a href="{{ url_for('generate_patient_report', type='appointment') }}" class="layui-btn layui-btn-warm">
+                            <i class="layui-icon">&#xe637;</i> 导出预约数据报表
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 图表区域 -->
+        <div class="layui-col-md6">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    <h3>患者性别分布</h3>
+                </div>
+                <div class="layui-card-body" id="genderChart" style="height: 300px;">
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-col-md6">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    <h3>患者状态分布</h3>
+                </div>
+                <div class="layui-card-body" id="statusChart" style="height: 300px;">
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    <h3>患者年龄分布</h3>
+                </div>
+                <div class="layui-card-body" id="ageChart" style="height: 300px;">
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    <h3>近30天预约趋势</h3>
+                </div>
+                <div class="layui-card-body" id="appointmentChart" style="height: 300px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script>
+    layui.use(['element'], function(){
+        var element = layui.element;
+        
+        // 患者性别分布
+        var genderChart = echarts.init(document.getElementById('genderChart'));
+        var genderOption = {
+            tooltip: {
+                trigger: 'item',
+                formatter: '{a} <br/>{b}: {c} ({d}%)'
+            },
+            legend: {
+                orient: 'horizontal',
+                bottom: 10,
+                data: ['男性', '女性']
+            },
+            series: [
+                {
+                    name: '性别分布',
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: {
+                        borderRadius: 10,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: false,
+                        position: 'center'
+                    },
+                    emphasis: {
+                        label: {
+                            show: true,
+                            fontSize: '18',
+                            fontWeight: 'bold'
+                        }
+                    },
+                    labelLine: {
+                        show: false
+                    },
+                    data: [
+                        {value: {{ male_count }}, name: '男性', itemStyle: {color: '#3498db'}},
+                        {value: {{ female_count }}, name: '女性', itemStyle: {color: '#e74c3c'}}
+                    ]
+                }
+            ]
+        };
+        genderChart.setOption(genderOption);
+
+        // 患者状态分布
+        var statusChart = echarts.init(document.getElementById('statusChart'));
+        var statusOption = {
+            tooltip: {
+                trigger: 'item',
+                formatter: '{a} <br/>{b}: {c} ({d}%)'
+            },
+            legend: {
+                orient: 'horizontal',
+                bottom: 10
+            },
+            series: [
+                {
+                    name: '患者状态',
+                    type: 'pie',
+                    radius: '50%',
+                    data: [
+                        {value: {{ status_counts['新患者'] }}, name: '新患者', itemStyle: {color: '#2ecc71'}},
+                        {value: {{ status_counts['治疗中'] }}, name: '治疗中', itemStyle: {color: '#3498db'}},
+                        {value: {{ status_counts['待随访'] }}, name: '待随访', itemStyle: {color: '#f39c12'}},
+                        {value: {{ status_counts['已完成'] }}, name: '已完成', itemStyle: {color: '#27ae60'}},
+                        {value: {{ status_counts['需紧急处理'] }}, name: '需紧急处理', itemStyle: {color: '#e74c3c'}}
+                    ],
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }
+            ]
+        };
+        statusChart.setOption(statusOption);
+
+        // 患者年龄分布
+        var ageChart = echarts.init(document.getElementById('ageChart'));
+        var ageData = [
+            {value: {{ age_groups['0-18'] }}, itemStyle: {color: '#3498db'}},
+            {value: {{ age_groups['19-30'] }}, itemStyle: {color: '#2ecc71'}},
+            {value: {{ age_groups['31-45'] }}, itemStyle: {color: '#1abc9c'}},
+            {value: {{ age_groups['46-60'] }}, itemStyle: {color: '#f39c12'}},
+            {value: {{ age_groups['61-75'] }}, itemStyle: {color: '#e67e22'}},
+            {value: {{ age_groups['76+'] }}, itemStyle: {color: '#e74c3c'}}
+        ];
+        var ageOption = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow'
+                }
+            },
+            legend: {},
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    data: ['0-18', '19-30', '31-45', '46-60', '61-75', '76+']
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value'
+                }
+            ],
+            series: [
+                {
+                    name: '患者数量',
+                    type: 'bar',
+                    barWidth: '60%',
+                    data: ageData
+                }
+            ]
+        };
+        ageChart.setOption(ageOption);
+
+        // 近30天预约趋势
+        var appointmentChart = echarts.init(document.getElementById('appointmentChart'));
+        var appointmentDates = {{ appointment_dates|tojson }};
+        var appointmentCounts = {{ appointment_counts|tojson }};
+        
+        var appointmentOption = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    label: {
+                        backgroundColor: '#6a7985'
+                    }
+                }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: appointmentDates
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value'
+                }
+            ],
+            series: [
+                {
+                    name: '预约数量',
+                    type: 'line',
+                    stack: '总量',
+                    areaStyle: {},
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    data: appointmentCounts
+                }
+            ]
+        };
+        appointmentChart.setOption(appointmentOption);
+
+        // 窗口大小改变时，重置图表大小
+        window.addEventListener('resize', function() {
+            genderChart.resize();
+            statusChart.resize();
+            ageChart.resize();
+            appointmentChart.resize();
+        });
+    });
+</script>
+{% endblock %} 

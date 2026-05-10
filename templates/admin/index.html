@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>管理员控制台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href="https://unpkg.com/layui@2.10.1/dist/css/layui.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/layui/2.5.5/layui.min.js"></script>
+
+    <!-- 字体图标备用方案 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 检查字体图标是否正确加载
+            setTimeout(function () {
+                var testIcon = document.createElement('i');
+                testIcon.className = 'fas fa-user';
+                testIcon.style.visibility = 'hidden';
+                document.body.appendChild(testIcon);
+
+                var iconStyle = window.getComputedStyle(testIcon);
+                var isFontLoaded = iconStyle.fontFamily.includes('Font Awesome') ||
+                    iconStyle.fontFamily.includes('FontAwesome');
+
+                if (!isFontLoaded) {
+                    console.log('字体图标未正确加载，加载备用方案');
+                    // 加载备用CSS
+                    var link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = '../static/download_style/css/font-awesome-4.7.0.min.css';
+                    document.head.appendChild(link);
+                }
+
+                document.body.removeChild(testIcon);
+            }, 500);
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
+</head>
+
+<body>
+<div class="layui-layout layui-layout-admin">
+    <!-- 顶部导航 -->
+    <div class="layui-header">
+        <div class="layui-logo">医疗系统管理后台</div>
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <img src="/static/img/icon.png" alt="用户头像" class="layui-nav-img">
+                    {{ current_user.username }}
+                </a>
+                <dl class="layui-nav-child">
+                    <dd><a href="{{ url_for('logout') }}">退出登录</a></dd>
+                </dl>
+            </li>
+        </ul>
+    </div>
+
+    <!-- 左侧菜单 -->
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <ul class="layui-nav layui-nav-tree" data-lay-filter="test">
+                <li class="layui-nav-item {{ 'layui-this' if request.endpoint == 'admin_index' else '' }}">
+                    <a href="{{ url_for('admin_index') }}"><i class="layui-icon">&#xe68e;</i> 首页</a>
+                </li>
+                <li class="layui-nav-item {{ 'layui-nav-itemed' if request.endpoint in ['admin_user_list','admin_user_add'] else '' }}">
+                    <a href="javascript:;">用户管理</a>
+                    <dl class="layui-nav-child">
+                        <dd class="{{ 'layui-this' if request.endpoint == 'admin_user_list' else '' }}"><a
+                                href="{{ url_for('admin_user_list') }}">用户列表</a></dd>
+                        <dd class="{{ 'layui-this' if request.endpoint == 'admin_user_add' else '' }}"><a
+                                href="{{ url_for('admin_user_add') }}">添加用户</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item {{ 'layui-nav-itemed' if request.endpoint in ['admin_system_config','admin_logs','admin_backup'] else '' }}">
+                    <a href="javascript:;">系统设置</a>
+                    <dl class="layui-nav-child">
+                        <dd class="{{ 'layui-this' if request.endpoint == 'admin_system_config' else '' }}"><a
+                                href="{{ url_for('admin_system_config') }}">系统配置</a></dd>
+                        <dd class="{{ 'layui-this' if request.endpoint == 'admin_logs' else '' }}"><a
+                                href="{{ url_for('admin_logs') }}">操作日志</a></dd>
+                        <dd class="{{ 'layui-this' if request.endpoint == 'admin_backup' else '' }}"><a
+                                href="{{ url_for('admin_backup') }}">数据备份</a></dd>
+                    </dl>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 内容主体区域 -->
+    <div class="layui-body">
+        <div style="padding: 15px;">
+            <blockquote class="layui-elem-quote">欢迎使用医疗系统管理后台</blockquote>
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-header">系统概览</div>
+                        <div class="layui-card-body">
+                            <div class="layui-row layui-col-space10">
+                                <div class="layui-col-md3">
+                                    <div class="layui-card">
+                                        <div class="layui-card-body">
+                                            <div class="layuiadmin-card-status">
+                                                <p>用户总数</p>
+                                                <p><span
+                                                        style="font-size: 24px; color: #1E9FFF;">{{ user_count }}</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="layui-col-md3">
+                                    <div class="layui-card">
+                                        <div class="layui-card-body">
+                                            <div class="layuiadmin-card-status">
+                                                <p>医生数量</p>
+                                                <p><span
+                                                        style="font-size: 24px; color: #5FB878;">{{ doctor_count }}</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="layui-col-md3">
+                                    <div class="layui-card">
+                                        <div class="layui-card-body">
+                                            <div class="layuiadmin-card-status">
+                                                <p>患者数量</p>
+                                                <p><span
+                                                        style="font-size: 24px; color: #FF5722;">{{ patient_count }}</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="layui-col-md3">
+                                    <div class="layui-card">
+                                        <div class="layui-card-body">
+                                            <div class="layuiadmin-card-status">
+                                                <p>今日访问</p>
+                                                <p><span
+                                                        style="font-size: 24px; color: #FFB800;">{{ today_visits }}</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="overview-chart"
+                                 data-user="{{ user_count }}"
+                                 data-doctor="{{ doctor_count }}"
+                                 data-patient="{{ patient_count }}"
+                                 data-visits="{{ today_visits }}"
+                                 style="width: 100%; height: 300px; margin: 20px 0;">
+                            </div>
+                            <div class="layui-row layui-col-space10" style="margin-top:20px; display:flex; justify-content:center;">
+                              <div class="layui-col-md3">
+                                <div class="layui-card">
+                                  <div class="layui-card-body">
+                                    <div class="layuiadmin-card-status">
+                                      <p>总预约数</p>
+                                      <p><span style="font-size:24px; color:#FFB800;">{{ appointment_count }}</span></p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="layui-col-md3">
+                                <div class="layui-card">
+                                  <div class="layui-card-body">
+                                    <div class="layuiadmin-card-status">
+                                      <p>待处理预约</p>
+                                      <p><span style="font-size:24px; color:#FF5722;">{{ pending_appointments }}</span></p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="layui-col-md3">
+                                <div class="layui-card">
+                                  <div class="layui-card-body">
+                                    <div class="layuiadmin-card-status">
+                                      <p>活跃会话数</p>
+                                      <p><span style="font-size:24px; color:#5FB878;">{{ active_sessions }}</span></p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <!-- 预约和会话饼图展示 -->
+                            <div class="layui-row layui-col-space10" style="margin-top:20px;">
+                              <div class="layui-col-md6">
+                                <div id="appointment-pie"
+                                     data-pending="{{ pending_appointments }}"
+                                     data-processed="{{ appointment_count - pending_appointments }}"
+                                     style="width:100%; height:300px;"></div>
+                              </div>
+                              <div class="layui-col-md6">
+                                <div id="session-pie"
+                                     data-active="{{ active_sessions }}"
+                                     data-inactive="{{ total_sessions - active_sessions }}"
+                                     style="width:100%; height:300px;"></div>
+                              </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-card">
+                <div class="layui-card-header">系统更新公告</div>
+                <div class="layui-card-body">
+                    <div class="layui-collapse" data-lay-accordion="">
+                        <div class="layui-colla-item">
+                            <h2 class="layui-colla-title">日志功能增强 - {{ datetime.now().strftime('%Y-%m-%d') }}</h2>
+                            <div class="layui-colla-content layui-show">
+                                <p><strong>新增功能:</strong></p>
+                                <ul>
+                                    <li>日志导出: 支持CSV和Excel格式导出所有操作日志</li>
+                                    <li>日志统计: 添加图表展示操作类型分布、用户操作排行和每日操作趋势</li>
+                                    <li>日志详情: 点击详情可查看完整日志信息</li>
+                                    <li>增强搜索: 改进日志筛选功能，支持多条件联合查询</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="layui-colla-item">
+                            <h2 class="layui-colla-title">数据备份功能增强 - {{ datetime.now().strftime('%Y-%m-%d')
+                                }}</h2>
+                            <div class="layui-colla-content">
+                                <p><strong>新增功能:</strong></p>
+                                <ul>
+                                    <li>自动备份: 支持按日/周/月定时自动备份数据库</li>
+                                    <li>备份比较: 可视化比较不同备份文件的差异</li>
+                                    <li>批量管理: 支持删除旧备份、一键删除所有备份等批量操作</li>
+                                    <li>备份历史: 直观展示近期备份记录</li>
+                                    <li>自定义保留: 可设置自动保留的备份数量，自动清理过期备份</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="layui-colla-item">
+                            <h2 class="layui-colla-title">UI界面美化与优化 - {{ datetime.now().strftime('%Y-%m-%d')
+                                }}</h2>
+                            <div class="layui-colla-content">
+                                <p>本次更新对管理后台UI进行了全面优化:</p>
+                                <ul>
+                                    <li>统一风格: 所有管理页面采用一致的设计语言</li>
+                                    <li>交互优化: 改进表单和表格的交互体验</li>
+                                    <li>视觉增强: 添加图标、色彩和动效，提升视觉体验</li>
+                                    <li>响应式设计: 优化在不同设备上的显示效果</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    layui.use(['element', 'layer'], function () {
+        var element = layui.element;
+        var layer = layui.layer;
+        // 初始化系统概览图表
+        var chartDom = document.getElementById('overview-chart');
+        if (chartDom) {
+            // 读取数据量的 data 属性
+            var dataValues = [
+                +chartDom.getAttribute('data-user'),
+                +chartDom.getAttribute('data-doctor'),
+                +chartDom.getAttribute('data-patient'),
+                +chartDom.getAttribute('data-visits')
+            ];
+            var overviewChart = echarts.init(chartDom);
+            overviewChart.setOption({
+                title: { text: '系统概览统计', left: 'center' },
+                tooltip: {},
+                xAxis: { type: 'category', data: ['用户', '医生', '患者', '今日访问'] },
+                yAxis: { type: 'value' },
+                series: [{
+                    name: '数量',
+                    type: 'bar',
+                    data: dataValues,
+                    itemStyle: { color: '#1E9FFF' }
+                }]
+            });
+        }
+        // 初始化预约饼图
+        var apDom = document.getElementById('appointment-pie');
+        if (apDom) {
+            var apChart = echarts.init(apDom);
+            var pend = +apDom.getAttribute('data-pending');
+            var proc = +apDom.getAttribute('data-processed');
+            apChart.setOption({
+                title: { text: '预约状态分布', left: 'center' },
+                tooltip: { trigger: 'item' },
+                legend: { orient: 'vertical', left: 'left', data: ['待处理','已处理'] },
+                series: [{
+                    name: '预约',
+                    type: 'pie',
+                    radius: '50%',
+                    data: [
+                        { value: pend, name: '待处理' },
+                        { value: proc, name: '已处理' }
+                    ],
+                    emphasis: { itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0, 0, 0, 0.5)' } }
+                }]
+            });
+        }
+        // 初始化会话饼图
+        var spDom = document.getElementById('session-pie');
+        if (spDom) {
+            var spChart = echarts.init(spDom);
+            var act = +spDom.getAttribute('data-active');
+            var inact = +spDom.getAttribute('data-inactive');
+            spChart.setOption({
+                title: { text: '会话活跃度', left: 'center' },
+                tooltip: { trigger: 'item' },
+                legend: { orient: 'vertical', left: 'left', data: ['激活','非激活'] },
+                series: [{
+                    name: '会话',
+                    type: 'pie',
+                    radius: '50%',
+                    data: [
+                        { value: act, name: '激活' },
+                        { value: inact, name: '非激活' }
+                    ],
+                    emphasis: { itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0, 0, 0, 0.5)' } }
+                }]
+            });
+        }
+    });
+</script>
+
+<!-- 仅针对内容主体区域的样式 -->
+<style>
+  /* 内容主体区域布局 */
+  .layui-body { background: #f9f9f9; }
+  .layui-body > div { padding: 20px; max-width: 1200px; margin: 0 auto; }
+  .layui-elem-quote { text-align: center; background-color: #ffffff; border-left: 4px solid #1E9FFF; padding: 10px 20px; margin-bottom: 20px; }
+  .layuiadmin-card-status { text-align: center; }
+  .layuiadmin-card-status p:first-child { font-size: 16px; color: #666; margin-bottom: 8px; }
+  .layuiadmin-card-status p:last-child span { font-size: 28px; font-weight: bold; color: #1E9FFF; }
+  #overview-chart { margin: 30px auto; width: 100%; max-width: 800px; height: 300px; background: #ffffff; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+  /* 恢复内容区卡片样式 */
+  .layui-body .layui-card {
+    background: #ffffff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    border-radius: 6px;
+    margin-bottom: 30px;
+  }
+  .layui-body .layui-card-header {
+    background: #f5f5f5;
+    padding: 10px 20px;
+    border-bottom: 1px solid #eee;
+    font-size: 18px;
+    color: #333;
+    font-weight: 600;
+  }
+  .layui-body .layui-card-body {
+    padding: 20px;
+  }
+</style>
+</body>
+
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人信息管理</title>
+    <!-- 引入CSS库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .profile-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #6c757d;
+            margin-bottom: 1rem;
+        }
+
+        .alert {
+            display: none;
+            margin-top: 1rem;
+        }
+    </style>
+
+    <!-- 字体图标备用方案 -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 检查字体图标是否正确加载
+        setTimeout(function() {
+            var testIcon = document.createElement('i');
+            testIcon.className = 'fas fa-user';
+            testIcon.style.visibility = 'hidden';
+            document.body.appendChild(testIcon);
+            
+            var iconStyle = window.getComputedStyle(testIcon);
+            var isFontLoaded = iconStyle.fontFamily.includes('Font Awesome') || 
+                               iconStyle.fontFamily.includes('FontAwesome');
+            
+            if (!isFontLoaded) {
+                console.log('字体图标未正确加载，加载备用方案');
+                // 加载备用CSS
+                var link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = '../static/download_style/css/font-awesome-4.7.0.min.css';
+                document.head.appendChild(link);
+            }
+            
+            document.body.removeChild(testIcon);
+        }, 500);
+    });
+    </script>
+    </head>
+
+<body>
+<div class="container">
+    <div class="profile-container">
+        <div class="profile-header">
+            <h2>个人信息管理</h2>
+            <p class="text-secondary">在这里查看和修改您的个人信息</p>
+        </div>
+
+        <!-- 选项卡导航 -->
+        <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile"
+                        type="button"
+                        role="tab" aria-controls="profile" aria-selected="true">个人资料
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button"
+                        role="tab" aria-controls="password" aria-selected="false">修改密码
+                </button>
+            </li>
+        </ul>
+
+        <!-- 选项卡内容 -->
+        <div class="tab-content" id="profileTabContent">
+            <!-- 个人资料选项卡 -->
+            <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                <div class="text-center mb-4">
+                    <div class="profile-avatar mx-auto"><span id="avatar-initial">U</span></div>
+                    <h4 id="username-display">用户名</h4>
+                    <p class="text-secondary" id="role-display">角色</p>
+                </div>
+                <div class="form-section">
+                    <div class="row mb-3">
+                        <label class="col-md-3 col-form-label">用户名</label>
+                        <div class="col-md-9 pt-2" id="username-display-field">加载中...</div>
+                    </div>
+                    <div class="row mb-3">
+                        <label class="col-md-3 col-form-label">真实姓名</label>
+                        <div class="col-md-9 pt-2" id="real-name-display-field">加载中...</div>
+                    </div>
+                    <div class="row mb-3">
+                        <label class="col-md-3 col-form-label">身份证号</label>
+                        <div class="col-md-9 pt-2" id="id-card-display-field">加载中...</div>
+                    </div>
+
+                    <!-- 只读字段 -->
+                    <div class="row mb-3">
+                        <div class="col-md-3 label">注册时间</div>
+                        <div class="col-md-9" id="reg-date-value">加载中...</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3 label">最后登录</div>
+                        <div class="col-md-9" id="last-login-value">加载中...</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3 label">账户状态</div>
+                        <div class="col-md-9" id="account-status-value">加载中...</div>
+                    </div>
+
+                    <!-- 提示 -->
+                    <div class="alert alert-success" id="profile-success"></div>
+                    <div class="alert alert-danger" id="profile-error"></div>
+                </div>
+
+                <!-- 个人信息表单 -->
+                <form id="profileForm">
+                    <div class="form-section">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">电子邮箱</label>
+                            <input type="email" class="form-control" id="email" name="email">
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">手机号码</label>
+                            <input type="tel" class="form-control" id="phone" name="phone">
+                        </div>
+
+                        <!-- 患者特有字段 -->
+                        <div class="patient-only-fields">
+                            <div class="mb-3">
+                                <label for="address" class="form-label">家庭住址</label>
+                                <input type="text" class="form-control" id="address" name="address">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">紧急联系人</label>
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                            <input type="text" class="form-control" placeholder="联系人姓名"
+                                                   id="emergency_name">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                            <input type="text" class="form-control" placeholder="联系电话"
+                                                   id="emergency_phone">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-text text-muted">请填写可在紧急情况下联系的人员信息</div>
+                                <input type="hidden" name="emergency_contact" id="emergency_contact">
+                            </div>
+
+                        </div>
+
+                        <div class="alert alert-success" id="profile-success-alert" role="alert">
+                            个人资料更新成功!
+                        </div>
+                        <div class="alert alert-danger" id="profile-error-alert" role="alert">
+                            更新失败，请重试。
+                        </div>
+
+                        <div class="action-buttons">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary"
+                               id="back-home-btn">返回首页</a>
+                            <button type="button" class="btn btn-primary" id="update-profile-btn">保存更改</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 修改密码选项卡 -->
+            <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
+                <div class="form-section">
+                    <form id="passwordForm">
+                        <div class="mb-3">
+                            <label for="current_password" class="form-label">当前密码</label>
+                            <input type="password" class="form-control" id="current_password" name="current_password"
+                                   autocomplete="current-password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_password" class="form-label">新密码</label>
+                            <input type="password" class="form-control" id="new_password" name="new_password"
+                                   autocomplete="new-password" required>
+                            <div class="form-text">密码长度不能少于6个字符</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirm_password" class="form-label">确认新密码</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password"
+                                   autocomplete="new-password" required>
+                        </div>
+
+                        <div class="alert alert-success" id="password-success-alert" role="alert">
+                            密码修改成功!
+                        </div>
+                        <div class="alert alert-danger" id="password-error-alert" role="alert">
+                            密码修改失败，请重试。
+                        </div>
+
+                        <div class="action-buttons">
+                            <button type="button" class="btn btn-primary" id="change-password-btn">更新密码</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 引入JavaScript库 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<!-- 优先加载本地 jQuery，若失败再加载 CDN 备用 -->
+<script src="{{ url_for('static', filename='download_style/js/jquery-3.6.0.min.js') }}"></script>
+<script>
+    if (typeof jQuery === 'undefined') {
+        document.write('<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"><\\/script>');
+    }
+</script>
+<script src="{{ url_for('static', filename='js/user_profile.js') }}"></script>
+</body>
+
+</html>

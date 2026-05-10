@@ -1,0 +1,84 @@
+/* 通用页面样式 */
+body {
+    font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+    background: #f0f4f8;
+    color: #333;
+}
+
+/* 页面标题 */
+.dashboard-title {
+    font-size: 28px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 30px;
+    color: #004b91;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 10px;
+}
+
+/* 洞察区域样式 */
+.medical-insight {
+    background: #ffffff;
+    border-left: 6px solid #007bff;
+    padding: 20px 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.1);
+}
+
+/* 洞察标签 */
+.badge-custom {
+    background: #007bff;
+    color: #fff;
+    font-size: 14px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    margin: 0 3px;
+}
+
+/* 统计卡片 */
+.stat-card {
+    background: linear-gradient(135deg, #007bff 0%, #00c6ff 100%);
+    border-radius: 16px;
+    color: #fff;
+    padding: 20px 15px;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+.stat-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+}
+.stat-value {
+    font-size: 26px;
+    font-weight: bold;
+}
+.stat-label {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* 图表卡片 */
+.card {
+    border-radius: 14px;
+    border: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+.card-header {
+    background: #007bff;
+    color: #fff;
+    font-weight: 600;
+    font-size: 16px;
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+}
+
+/* 图表容器 */
+.chart-container {
+    position: relative;
+    height: 280px;
+    padding: 10px 0;
+}

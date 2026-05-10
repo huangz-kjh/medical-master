@@ -1,0 +1,769 @@
+{% extends 'layout.html' %} {% block title %}我的患者 - 医疗影像平台{% endblock %} {% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/my_patient.css') }}" />
+<style>
+  /* 患者分类标签样式 */
+  .patient-filter-tabs .layui-tab-title {
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .patient-filter-tabs .layui-tab-title li {
+    padding: 0 20px;
+    font-size: 13px;
+    color: #606266;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-right: 5px;
+    border-radius: 4px 4px 0 0;
+  }
+
+  .patient-filter-tabs .layui-tab-title li:hover {
+    color: #55b9f3;
+    background-color: #f9fbfd;
+  }
+
+  .patient-filter-tabs .layui-tab-title li.layui-this {
+    color: #55b9f3;
+    font-weight: 500;
+    background-color: #f0f9ff;
+  }
+
+  /* 状态计数显示样式 */
+  .status-count {
+    margin-left: 5px;
+    font-size: 10px;
+    height: 16px;
+    line-height: 16px;
+    padding: 0 6px;
+    border-radius: 8px;
+    font-weight: normal;
+  }
+
+  /* 改进状态标签的样式一致性 */
+  .patient-status .layui-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: normal;
+    font-size: 12px;
+  }
+
+  /* 添加一些视觉提示 */
+  .patient-filter-active {
+    background-color: #f5f5f5;
+    border-radius: 4px;
+  }
+
+  /* 添加统计卡片点击效果 */
+  .patient-status-card {
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    cursor: pointer;
+    overflow: hidden;
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+
+  .patient-status-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  }
+
+  .patient-status-card-active {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  /* 统计卡片内部样式优化 */
+  .layui-text-center {
+    text-align: center;
+  }
+
+  .layui-text-center p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 8px;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .layui-text-center h2 {
+    font-size: 28px;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+    line-height: 1;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* 背景色微调 */
+  .layui-bg-blue {
+    background-color: #55b9f3 !important;
+  }
+
+  .layui-bg-orange {
+    background-color: #ff9642 !important;
+  }
+
+  .layui-bg-red {
+    background-color: #ff7875 !important;
+  }
+
+  .layui-bg-cyan {
+    background-color: #42b8b5 !important;
+  }
+
+  .layui-bg-green {
+    background-color: #67c23a !important;
+  }
+
+  /* 患者列表按钮清新简约样式 */
+  .btn-fresh {
+    height: 28px;
+    line-height: 28px;
+    padding: 0 12px;
+    font-size: 12px;
+    border-radius: 4px;
+    box-shadow: none;
+    transition: all 0.2s;
+    font-weight: normal;
+    border: none;
+  }
+
+  .btn-fresh:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .btn-fresh-primary {
+    background-color: #55b9f3;
+    color: white;
+  }
+
+  .btn-fresh-success {
+    background-color: #67c23a;
+    color: white;
+  }
+
+  .btn-fresh-warning {
+    background-color: #e6a23c;
+    color: white;
+  }
+
+  .btn-fresh-danger {
+    background-color: #ff7875;
+    color: white;
+  }
+
+  .btn-fresh-info {
+    background-color: #909399;
+    color: white;
+  }
+
+  .btn-fresh-text {
+    background-color: transparent;
+    color: #606266;
+    border: 1px solid #ebedf0;
+  }
+
+  .btn-fresh-text:hover {
+    color: #55b9f3;
+    background-color: rgba(85, 185, 243, 0.05);
+    border-color: #d0e6f8;
+  }
+
+  /* 按钮组样式优化 */
+  .patient-action-group {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  /* 表格美化样式 */
+  .layui-table {
+    border: none;
+    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+  }
+
+  .layui-table thead th {
+    font-size: 13px;
+    font-weight: 500;
+    color: #606266;
+    background-color: #f9fbfd;
+    border-bottom: 1px solid #ebeef5;
+  }
+
+  .layui-table tbody td {
+    padding: 12px 8px;
+    color: #5e6d82;
+    border-bottom: 1px solid #f0f2f5;
+    font-size: 13px;
+  }
+
+  .layui-table tr:hover {
+    background-color: #f9fbfd;
+  }
+
+  /* 页面卡片美化 */
+  .layui-card {
+    border-radius: 8px;
+    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.3s;
+  }
+
+  .layui-card:hover {
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+  }
+
+  .layui-card-header {
+    font-size: 15px;
+    font-weight: 500;
+    color: #303133;
+    border-bottom: 1px solid #f0f2f5;
+  }
+
+  /* 患者姓名链接美化 */
+  .patient-name-link {
+    color: #409eff;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .patient-name-link:hover {
+    color: #66b1ff;
+    text-decoration: underline;
+  }
+
+  /* 患者状态标签美化 */
+  .patient-status {
+    display: flex;
+    justify-content: center;
+  }
+
+  /* 分页样式 */
+  .patient-pagination-container {
+    margin: 20px 0;
+  }
+
+  .layui-laypage {
+    display: inline-block;
+  }
+
+  .layui-laypage a,
+  .layui-laypage span {
+    margin: 0 3px;
+    border-radius: 3px;
+    font-size: 13px;
+  }
+
+  .layui-laypage .layui-laypage-curr .layui-laypage-em {
+    background-color: #55b9f3;
+    border-radius: 3px;
+  }
+
+  /* 搜索框容器样式 */
+  .search-container {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* 搜索结果容器样式 */
+  #patientSearchResults {
+    position: absolute;
+    width: 100%;
+    max-height: 250px;
+    overflow-y: auto;
+    background-color: #fff;
+    border: 1px solid #e6e6e6;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 999;
+    margin-top: -1px;
+    box-sizing: border-box;
+    left: 0;
+    right: 0;
+  }
+
+  /* 弹窗样式优化 */
+  #addPatientDialog {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  #addPatientDialog .layui-form-item {
+    margin-bottom: 15px;
+  }
+
+  #addPatientDialog .layui-form-label {
+    width: 90px;
+    padding: 9px 10px;
+    text-align: right;
+    box-sizing: border-box;
+  }
+
+  #addPatientDialog .layui-input-block {
+    position: relative;
+    margin-left: 100px;
+    min-height: 36px;
+    width: calc(100% - 100px);
+    box-sizing: border-box;
+  }
+
+  #addPatientDialog .layui-btn {
+    padding: 0 25px;
+  }
+
+  /* 已选患者区域样式 */
+  #selectedPatientArea {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    border: 1px solid #e6e6e6;
+  }
+
+  #selectedPatientName {
+    background-color: #f0f9eb;
+    border-color: #e1f3d8;
+  }
+
+  /* 患者项目样式 */
+  .patient-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+  }
+
+  .patient-item:last-child {
+    border-bottom: none;
+  }
+
+  .patient-item:hover {
+    background-color: #f5f7fa;
+  }
+
+  /* 高亮样式 */
+  .patient-item-highlighted {
+    background-color: #ecf5ff !important;
+    border-left: 2px solid #409eff;
+  }
+
+  .patient-name {
+    font-weight: bold;
+    color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .patient-age {
+    font-weight: normal;
+    color: #666;
+    margin-left: 8px;
+    font-size: 12px;
+  }
+
+  .patient-contact {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="layui-container">
+  <!-- 为JavaScript使用添加医生ID到页面 -->
+  <div id="doctorIdData" data-id="{{ session.get('user_id', 0) }}" style="display: none"></div>
+
+  <!-- 页面标题区域 -->
+  <div class="layui-row layui-col-space15">
+    <div class="layui-col-md12">
+      <div class="layui-card">
+        <div class="layui-card-header">
+          <div class="layui-row">
+            <div class="layui-col-md8">
+              <h2 class="stats-title"><i class="layui-icon layui-icon-user"></i> 我的患者管理</h2>
+            </div>
+            <div class="layui-col-md4" style="text-align: right; padding-right: 10px">
+              <button class="btn-fresh btn-fresh-success" id="addPatientBtn">
+                <i class="layui-icon">&#xe654;</i> 添加患者
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 统计信息卡片 -->
+  <div class="layui-row layui-col-space15">
+    <div class="layui-col-md12">
+      <div class="layui-card">
+        <div class="layui-card-header">
+          <h3 class="stats-title"><i class="layui-icon layui-icon-chart"></i> 患者统计信息</h3>
+        </div>
+        <div class="layui-card-body">
+          <div class="layui-row layui-col-space10" style="display: flex; justify-content: center">
+            <div class="layui-col-md2">
+              <div class="layui-card layui-bg-blue patient-status-card" data-status="all">
+                <div class="layui-card-body layui-text-center">
+                  <p unselectable="on" onselectstart="return false;">患者总数</p>
+                  <h2 unselectable="on" onselectstart="return false;">{{ total_patients }}</h2>
+                </div>
+              </div>
+            </div>
+            {% for status, count in status_counts.items() %} {% if status in ['待就诊', '治疗中',
+            '随访中', '已完成'] %}
+            <div class="layui-col-md2">
+              <div
+                class="layui-card {% if status == '待就诊' %}layui-bg-orange{% elif status == '治疗中' %}layui-bg-red{% elif status == '随访中' %}layui-bg-cyan{% elif status == '已完成' %}layui-bg-green{% else %}layui-bg-gray{% endif %} patient-status-card"
+                data-status="{{ status }}"
+              >
+                <div class="layui-card-body layui-text-center">
+                  <p unselectable="on" onselectstart="return false;">{{ status }}</p>
+                  <h2 unselectable="on" onselectstart="return false;">{{ count }}</h2>
+                </div>
+              </div>
+            </div>
+            {% endif %} {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 患者分组与搜索 -->
+  <div class="layui-row layui-col-space15">
+    <div class="layui-col-md12">
+      <div class="layui-card">
+        <div class="layui-card-header">
+          <h3 class="stats-title"><i class="layui-icon layui-icon-search"></i> 患者查询</h3>
+        </div>
+        <div class="layui-card-body">
+          <div class="layui-row">
+            <div class="layui-col-md10">
+              <div class="layui-input-group">
+                <input
+                  type="text"
+                  id="patientSearch"
+                  placeholder="搜索患者姓名或联系方式"
+                  class="layui-input"
+                />
+                <div class="layui-input-suffix">
+                  <i class="layui-icon layui-icon-search"></i>
+                </div>
+              </div>
+            </div>
+            <div class="layui-col-md2" style="text-align: right">
+              <button class="layui-btn layui-btn-primary" id="toggleAdvancedSearch">
+                <i class="layui-icon layui-icon-down"></i> 高级搜索
+              </button>
+            </div>
+          </div>
+
+          <!-- 高级搜索区域 -->
+          <div
+            class="layui-row"
+            id="advancedSearchForm"
+            style="
+              display: none;
+              margin-top: 15px;
+              background-color: #f8f8f8;
+              padding: 15px;
+              border-radius: 4px;
+            "
+          >
+            <form class="layui-form" lay-filter="advancedSearchFormFilter">
+              <div class="layui-row layui-col-space15">
+                <!-- 左侧筛选条件 -->
+                <div class="layui-col-md6">
+                  <div class="layui-form-item">
+                    <label class="layui-form-label">患者状态</label>
+                    <div class="layui-input-block">
+                      <select name="status" lay-filter="status">
+                        <option value="">全部状态</option>
+                        <option value="待就诊">待就诊</option>
+                        <option value="治疗中">治疗中</option>
+                        <option value="随访中">随访中</option>
+                        <option value="已完成">已完成</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="layui-form-item">
+                    <label class="layui-form-label">关系类型</label>
+                    <div class="layui-input-block">
+                      <select name="relation" lay-filter="relation">
+                        <option value="">全部类型</option>
+                        <option value="主治">主治</option>
+                        <option value="会诊">会诊</option>
+                        <option value="协诊">协诊</option>
+                        <option value="转诊">转诊</option>
+                        <option value="随访">随访</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="layui-form-item">
+                    <label class="layui-form-label">患者性别</label>
+                    <div class="layui-input-block">
+                      <select name="gender" lay-filter="gender">
+                        <option value="">不限</option>
+                        <option value="男">男</option>
+                        <option value="女">女</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 右侧筛选条件 -->
+                <div class="layui-col-md6">
+                  <div class="layui-form-item">
+                    <label class="layui-form-label">年龄范围</label>
+                    <div class="layui-input-inline" style="width: 100px">
+                      <input
+                        type="number"
+                        name="age_min"
+                        placeholder="最小"
+                        autocomplete="off"
+                        class="layui-input"
+                      />
+                    </div>
+                    <div class="layui-form-mid">-</div>
+                    <div class="layui-input-inline" style="width: 100px">
+                      <input
+                        type="number"
+                        name="age_max"
+                        placeholder="最大"
+                        autocomplete="off"
+                        class="layui-input"
+                      />
+                    </div>
+                  </div>
+                  <div class="layui-form-item">
+                    <label class="layui-form-label">最近就诊</label>
+                    <div class="layui-input-block">
+                      <select name="last_visit_days" lay-filter="last_visit_days">
+                        <option value="">不限</option>
+                        <option value="7">最近一周</option>
+                        <option value="30">最近一个月</option>
+                        <option value="90">最近三个月</option>
+                        <option value="180">最近半年</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 按钮区 -->
+              <div class="layui-form-item" style="margin-top: 10px; text-align: center">
+                <div class="layui-input-block" style="margin-left: 0">
+                  <button
+                    type="button"
+                    class="layui-btn"
+                    lay-submit
+                    lay-filter="advancedSearchSubmit"
+                  >
+                    <i class="layui-icon layui-icon-search"></i> 搜索筛选
+                  </button>
+                  <button type="reset" class="layui-btn layui-btn-primary">
+                    <i
+                      class="layui-icon layui-icon-refresh"
+                      style="font-size: 12px; margin-right: 5px"
+                    ></i
+                    >重置条件
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 患者列表 -->
+  <div class="layui-row layui-col-space15">
+    <div class="layui-col-md12">
+      <div class="layui-card">
+        <div class="layui-card-header">
+          <h3 class="stats-title"><i class="layui-icon layui-icon-list"></i> 患者列表</h3>
+        </div>
+
+        <!-- 添加患者分类标签栏 -->
+        <div class="layui-card-header" style="padding-bottom: 0; border-bottom: none">
+          <div class="patient-filter-tabs">
+            <div class="layui-tab layui-tab-brief" lay-filter="patientStatusTabs">
+              <ul class="layui-tab-title">
+                <li class="layui-this" data-status="all">全部患者</li>
+                <li data-status="待就诊">
+                  待就诊
+                  <span class="layui-badge layui-bg-orange status-count" id="pendingCount"></span>
+                </li>
+                <li data-status="治疗中">
+                  治疗中
+                  <span class="layui-badge layui-bg-red status-count" id="treatmentCount"></span>
+                </li>
+                <li data-status="随访中">
+                  随访中
+                  <span class="layui-badge layui-bg-cyan status-count" id="followupCount"></span>
+                </li>
+                <li data-status="已完成">
+                  已完成
+                  <span class="layui-badge layui-bg-green status-count" id="completedCount"></span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="layui-card-body">
+          <table class="layui-table" lay-skin="line" lay-even>
+            <thead>
+              <tr>
+                <th style="text-align: center">姓名</th>
+                <th style="text-align: center">年龄/性别</th>
+                <th style="text-align: center">联系方式</th>
+                <th style="text-align: center">状态</th>
+                <th style="text-align: center">关系类型</th>
+                <th style="text-align: center">最近检查</th>
+                <th style="text-align: center">下次随访</th>
+                <th style="text-align: center">医生</th>
+                <th style="text-align: center; width: 260px">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for data in patients_data %}
+              <tr>
+                <td style="text-align: left">
+                  <a
+                    href="{{ url_for('patient_medical_record', patient_id=data.patient.patient_id) }}"
+                    class="layui-link patient-name-link"
+                  >
+                    {{ data.patient.name }}
+                  </a>
+                </td>
+                <td style="text-align: center">
+                  {{ data.patient.age }}岁 / {{ data.patient.gender }}
+                </td>
+                <td style="text-align: center">{{ data.patient.contact_info }}</td>
+                <td>
+                  <div class="patient-status">
+                    <span
+                      class="layui-badge {% if data.patient.status == '待就诊' %}layui-bg-orange {% elif data.patient.status == '治疗中' %}layui-bg-red {% elif data.patient.status == '随访中' %}layui-bg-cyan {% elif data.patient.status == '已完成' %}layui-bg-green {% else %}layui-bg-gray{% endif %}"
+                    >
+                      {{ data.patient.status }}
+                    </span>
+                  </div>
+                </td>
+                <td style="text-align: center">{{ data.relation.relation_type or '无' }}</td>
+                <td style="text-align: center">
+                  {% if data.latest_exam %} {{ data.latest_exam.exam_date.strftime('%Y-%m-%d') }} {%
+                  else %}
+                  <span class="layui-text-muted">暂无记录</span>
+                  {% endif %}
+                </td>
+                <td style="text-align: center">
+                  {% if data.relation.next_visit_date %} {{
+                  data.relation.next_visit_date.strftime('%Y-%m-%d') }} {% else %}
+                  <span class="layui-text-muted">暂无安排</span>
+                  {% endif %}
+                </td>
+                <td style="text-align: center">{{ data.relation.doctor.real_name }}</td>
+                <td>
+                  <div class="patient-action-group">
+                    <a
+                      href="{{ url_for('medical_patient_treatment', patient_id=data.patient.patient_id) }}"
+                      class="btn-fresh btn-fresh-primary"
+                    >
+                      <i class="layui-icon">&#xe631;</i> 治疗
+                    </a>
+                    <button
+                      class="btn-fresh {% if data.relation.notes %}btn-fresh-warning{% else %}btn-fresh-text{% endif %} show-note-btn"
+                      data-note="{{ data.relation.notes|default('')|e }}"
+                      data-id="{{ data.patient.patient_id }}"
+                    >
+                      <i
+                        class="layui-icon {% if data.relation.notes %}layui-icon-edit{% else %}layui-icon-add-1{% endif %}"
+                      ></i>
+                      {% if data.relation.notes %}查看备注{% else %}备注{% endif %}
+                    </button>
+                    {% if data.relation.notes %}
+                    <div class="patient-note-display" style="display: none">
+                      {{ data.relation.notes }}
+                    </div>
+                    {% endif %}
+                    <button
+                      class="btn-fresh btn-fresh-danger remove-relation-btn"
+                      data-id="{{ data.patient.patient_id }}"
+                      data-name="{{ data.patient.name }}"
+                    >
+                      <i class="layui-icon">&#xe640;</i> 移除
+                    </button>
+                    {% if data.relation.notes %}
+                    <div class="patient-note-display" style="display: none">
+                      {{ data.relation.notes }}
+                    </div>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <!-- 分页组件 -->
+          <div class="patient-pagination-container" style="text-align: center; margin-top: 20px">
+            <div id="patient-pagination" class="pagination"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 常用医疗工具快捷访问 -->
+  <div class="layui-row layui-col-space15">
+    <div class="layui-col-md12">
+      <div class="layui-card medical-tools-container">
+        <div class="layui-card-header">
+          <h3 class="stats-title"><i class="layui-icon layui-icon-util"></i> 医疗工具</h3>
+        </div>
+        <div class="layui-card-body">
+          <div class="layui-btn-container">
+            <a href="/doctor/appointments" class="layui-btn" id="appointmentManageBtn">
+              <i class="layui-icon">&#xe637;</i> 预约管理
+              <span
+                class="layui-badge layui-bg-orange pending-count"
+                style="margin-left: 5px; display: none"
+                >0</span
+              >
+            </a>
+            <a href="/patients" class="layui-btn layui-btn-normal">
+              <i class="layui-icon">&#xe770;</i> 患者档案
+            </a>
+            <a href="/chat" class="layui-btn layui-btn-warm">
+              <i class="layui-icon">&#xe63a;</i> AI诊断助手
+            </a>
+            <a href="/doctor/statistics" class="layui-btn layui-btn-primary">
+              <i class="layui-icon">&#xe62c;</i> 诊疗统计
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script src="/static/js/my_patients.js"></script>
+<script src="/static/js/my_patients_fix.js"></script>
+{% endblock %}

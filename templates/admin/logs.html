@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>操作日志</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link href="//unpkg.com/layui@2.10.1/dist/css/layui.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/layui/2.5.5/layui.min.js"></script>
+  <style>
+    .layui-card {
+      margin-bottom: 15px;
+      box-shadow: 0 1px 2px 0 rgba(0,0,0,.05);
+    }
+    .layui-form-label {
+      width: 90px;
+    }
+    .layui-table-tool {
+      background-color: #f8f8f8;
+    }
+    .log-operation-login { color: #009688; }
+    .log-operation-logout { color: #5FB878; }
+    .log-operation-create { color: #1E9FFF; }
+    .log-operation-update { color: #FFB800; }
+    .log-operation-delete { color: #FF5722; }
+    .log-operation-backup { color: #2F4056; }
+    .log-operation-restore { color: #393D49; }
+    .log-operation-download { color: #3963BC; }
+    .export-btn {
+      margin-left: 10px;
+    }
+    .log-actions {
+      display: flex;
+      justify-content: space-around;
+    }
+  </style>
+
+    <!-- 字体图标备用方案 -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 检查字体图标是否正确加载
+        setTimeout(function() {
+            var testIcon = document.createElement('i');
+            testIcon.className = 'fas fa-user';
+            testIcon.style.visibility = 'hidden';
+            document.body.appendChild(testIcon);
+            
+            var iconStyle = window.getComputedStyle(testIcon);
+            var isFontLoaded = iconStyle.fontFamily.includes('Font Awesome') || 
+                               iconStyle.fontFamily.includes('FontAwesome');
+            
+            if (!isFontLoaded) {
+                console.log('字体图标未正确加载，加载备用方案');
+                // 加载备用CSS
+                var link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = '../static/download_style/css/font-awesome-4.7.0.min.css';
+                document.head.appendChild(link);
+            }
+            
+            document.body.removeChild(testIcon);
+        }, 500);
+    });
+    </script>
+    </head>
+
+<body>
+  <div class="layui-layout layui-layout-admin">
+    <!-- 顶部导航 -->
+    <div class="layui-header">
+      <div class="layui-logo">医疗系统管理后台</div>
+      <ul class="layui-nav layui-layout-right">
+        <li class="layui-nav-item">
+          <a href="javascript:;">
+            <img src="/static/img/icon.png" class="layui-nav-img">
+            {{ current_user.username }}
+          </a>
+          <dl class="layui-nav-child">
+            <dd><a href="{{ url_for('logout') }}">退出登录</a></dd>
+          </dl>
+        </li>
+      </ul>
+    </div>
+
+    <!-- 左侧菜单 -->
+    <div class="layui-side layui-bg-black">
+      <div class="layui-side-scroll">
+        <ul class="layui-nav layui-nav-tree" data-lay-filter="test">
+          <li class="layui-nav-item {{ 'layui-this' if request.endpoint == 'admin_index' else '' }}">
+            <a href="{{ url_for('admin_index') }}"><i class="layui-icon">&#xe68e;</i> 首页</a>
+          </li>
+          <li class="layui-nav-item {{ 'layui-nav-itemed' if request.endpoint in ['admin_user_list','admin_user_add'] else '' }}">
+            <a href="javascript:;">用户管理</a>
+            <dl class="layui-nav-child">
+              <dd class="{{ 'layui-this' if request.endpoint == 'admin_user_list' else '' }}"><a href="{{ url_for('admin_user_list') }}">用户列表</a></dd>
+              <dd class="{{ 'layui-this' if request.endpoint == 'admin_user_add' else '' }}"><a href="{{ url_for('admin_user_add') }}">添加用户</a></dd>
+            </dl>
+          </li>
+          <li class="layui-nav-item {{ 'layui-nav-itemed' if request.endpoint in ['admin_system_config','admin_logs','admin_backup'] else '' }}">
+            <a href="javascript:;">系统设置</a>
+            <dl class="layui-nav-child">
+              <dd class="{{ 'layui-this' if request.endpoint == 'admin_system_config' else '' }}"><a href="{{ url_for('admin_system_config') }}">系统配置</a></dd>
+              <dd class="{{ 'layui-this' if request.endpoint == 'admin_logs' else '' }}"><a href="{{ url_for('admin_logs') }}">操作日志</a></dd>
+              <dd class="{{ 'layui-this' if request.endpoint == 'admin_backup' else '' }}"><a href="{{ url_for('admin_backup') }}">数据备份</a></dd>
+            </dl>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+
+    <!-- 内容主体区域 -->
+    <div class="layui-body">
+      <div style="padding: 15px;">
+        <div class="layui-card">
+          <div class="layui-card-header">
+            <span>操作日志</span>
+            <div class="layui-btn-group" style="float: right;">
+              <a href="{{ url_for('admin_logs_export', format='csv') }}" class="layui-btn layui-btn-sm">
+                <i class="layui-icon">&#xe67d;</i> 导出CSV文件
+              </a>
+              <a href="{{ url_for('admin_logs_export', format='excel') }}" class="layui-btn layui-btn-sm layui-btn-normal">
+                <i class="layui-icon">&#xe67d;</i> 导出Excel文件
+              </a>
+            </div>
+          </div>
+          <div class="layui-card-body">
+            <div style="margin-bottom: 15px;">
+              <button class="layui-btn layui-btn-danger layui-btn-sm" id="batchDeleteLogsBtn"><i class="layui-icon">&#xe640;</i> 批量删除日志</button>
+            </div>
+            <form class="layui-form" action="{{ url_for('admin_logs') }}" method="get">
+              <div class="layui-form-item">
+                <div class="layui-inline">
+                  <label class="layui-form-label">开始日期</label>
+                  <div class="layui-input-inline">
+                    <input type="text" name="start_date" id="start_date" placeholder="开始日期" autocomplete="off" class="layui-input" value="{{ request.args.get('start_date', '') }}">
+                  </div>
+                </div>
+                <div class="layui-inline">
+                  <label class="layui-form-label">结束日期</label>
+                  <div class="layui-input-inline">
+                    <input type="text" name="end_date" id="end_date" placeholder="结束日期" autocomplete="off" class="layui-input" value="{{ request.args.get('end_date', '') }}">
+                  </div>
+                </div>
+                <div class="layui-inline">
+                  <label class="layui-form-label">操作类型</label>
+                  <div class="layui-input-inline">
+                    <select name="operation_type">
+                      <option value="">全部</option>
+                      <option value="login" {% if request.args.get('operation_type') == 'login' %}selected{% endif %}>登录</option>
+                      <option value="logout" {% if request.args.get('operation_type') == 'logout' %}selected{% endif %}>登出</option>
+                      <option value="create" {% if request.args.get('operation_type') == 'create' %}selected{% endif %}>创建</option>
+                      <option value="update" {% if request.args.get('operation_type') == 'update' %}selected{% endif %}>更新</option>
+                      <option value="delete" {% if request.args.get('operation_type') == 'delete' %}selected{% endif %}>删除</option>
+                      <option value="backup" {% if request.args.get('operation_type') == 'backup' %}selected{% endif %}>备份</option>
+                      <option value="restore" {% if request.args.get('operation_type') == 'restore' %}selected{% endif %}>恢复</option>
+                      <option value="download" {% if request.args.get('operation_type') == 'download' %}selected{% endif %}>下载</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="layui-inline">
+                  <label class="layui-form-label">用户名</label>
+                  <div class="layui-input-inline">
+                    <input type="text" name="username" placeholder="用户名" autocomplete="off" class="layui-input" value="{{ request.args.get('username', '') }}">
+                  </div>
+                </div>
+                <div class="layui-inline">
+                  <button class="layui-btn" lay-submit>查询</button>
+                  <a href="{{ url_for('admin_logs') }}" class="layui-btn layui-btn-primary">重置条件</a>
+                </div>
+              </div>
+            </form>
+            
+            <table class="layui-table" lay-even lay-skin="line">
+              <thead>
+                <tr>
+                  <th>日志编号</th>
+                  <th>用户名</th>
+                  <th>操作类型</th>
+                  <th>操作描述</th>
+                  <th>IP地址</th>
+                  <th>操作时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% if logs %}
+                  {% for log in logs %}
+                  <tr>
+                    <td>{{ log.log_id }}</td>
+                    <td>{{ log.username }}</td>
+                    <td><span class="log-operation-{{ log.operation }}">
+                      {% if log.operation == 'login' %}登录
+                      {% elif log.operation == 'logout' %}登出
+                      {% elif log.operation == 'create' %}创建
+                      {% elif log.operation == 'update' %}更新
+                      {% elif log.operation == 'delete' %}删除
+                      {% elif log.operation == 'backup' %}备份
+                      {% elif log.operation == 'restore' %}恢复
+                      {% elif log.operation == 'download' %}下载
+                      {% elif log.operation == 'compare' %}比较
+                      {% else %}{{ log.operation }}{% endif %}
+                    </span></td>
+                    <td>{{ log.description }}</td>
+                    <td>{{ log.ip }}</td>
+                    <td>{{ log.create_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>
+                      <div class="log-actions">
+                        <a href="javascript:;" class="layui-btn layui-btn-xs" onclick="showLogDetail('{{ log.log_id }}')">
+                          <i class="layui-icon">&#xe60b;</i> 查看详情
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr><td colspan="7" style="text-align:center; color:#999;">暂无日志记录</td></tr>
+                {% endif %}
+              </tbody>
+            </table>
+            
+            <!-- 分页 -->
+            {% if pagination.pages > 1 %}
+            <div class="layui-box layui-laypage layui-laypage-default" style="margin-top: 15px;">
+              {% if pagination.has_prev %}
+                <a href="{{ url_for('admin_logs', page=pagination.prev_num, start_date=request.args.get('start_date', ''), end_date=request.args.get('end_date', ''), operation_type=request.args.get('operation_type', ''), username=request.args.get('username', '')) }}" class="layui-laypage-prev">上一页</a>
+              {% else %}
+                <span class="layui-laypage-prev layui-disabled">上一页</span>
+              {% endif %}
+              
+              {% for page in pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                {% if page %}
+                  {% if page != pagination.page %}
+                    <a href="{{ url_for('admin_logs', page=page, start_date=request.args.get('start_date', ''), end_date=request.args.get('end_date', ''), operation_type=request.args.get('operation_type', ''), username=request.args.get('username', '')) }}">{{ page }}</a>
+                  {% else %}
+                    <span class="layui-laypage-curr"><em class="layui-laypage-em"></em><em>{{ page }}</em></span>
+                  {% endif %}
+                {% else %}
+                  <span class="layui-laypage-spr">...</span>
+                {% endif %}
+              {% endfor %}
+              
+              {% if pagination.has_next %}
+                <a href="{{ url_for('admin_logs', page=pagination.next_num, start_date=request.args.get('start_date', ''), end_date=request.args.get('end_date', ''), operation_type=request.args.get('operation_type', ''), username=request.args.get('username', '')) }}" class="layui-laypage-next">下一页</a>
+              {% else %}
+                <span class="layui-laypage-next layui-disabled">下一页</span>
+              {% endif %}
+              
+              <span class="layui-laypage-count">共 {{ pagination.total }} 条记录</span>
+              <span class="layui-laypage-limits">
+                每页
+                <select lay-ignore onchange="location.href=this.value">
+                  {% for limit in [10, 20, 50, 100] %}
+                    <option value="{{ url_for('admin_logs', page=1, limit=limit, start_date=request.args.get('start_date', ''), end_date=request.args.get('end_date', ''), operation_type=request.args.get('operation_type', ''), username=request.args.get('username', '')) }}" {% if request.args.get('limit', 10)|int == limit %}selected{% endif %}>{{ limit }} 条</option>
+                  {% endfor %}
+                </select>
+              </span>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <!-- 统计卡片 -->
+        <div class="layui-row layui-col-space15">
+          <div class="layui-col-md4">
+            <div class="layui-card">
+              <div class="layui-card-header">操作类型分布</div>
+              <div class="layui-card-body" style="height: 280px;" id="operation-chart"></div>
+            </div>
+          </div>
+          <div class="layui-col-md4">
+            <div class="layui-card">
+              <div class="layui-card-header">用户操作排名</div>
+              <div class="layui-card-body" style="height: 280px;" id="user-chart"></div>
+            </div>
+          </div>
+          <div class="layui-col-md4">
+            <div class="layui-card">
+              <div class="layui-card-header">每日操作趋势</div>
+              <div class="layui-card-body" style="height: 280px;" id="trend-chart"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 日志详情弹窗模板 -->
+  <div id="log-detail-popup" style="display: none; padding: 20px;">
+    <div class="layui-form">
+      <div class="layui-form-item">
+        <label class="layui-form-label">日志编号</label>
+        <div class="layui-input-block">
+          <input type="text" id="detail-log-id" class="layui-input" readonly>
+        </div>
+      </div>
+      <div class="layui-form-item">
+        <label class="layui-form-label">用户编号</label>
+        <div class="layui-input-block">
+          <input type="text" id="detail-user-id" class="layui-input" readonly>
+        </div>
+      </div>
+      <div class="layui-form-item">
+        <label class="layui-form-label">用户名</label>
+        <div class="layui-input-block">
+          <input type="text" id="detail-username" class="layui-input" readonly>
+        </div>
+      </div>
+      <div class="layui-form-item">
+        <label class="layui-form-label">操作类型</label>
+        <div class="layui-input-block">
+          <input type="text" id="detail-operation" class="layui-input" readonly>
+        </div>
+      </div>
+      <div class="layui-form-item">
+        <label class="layui-form-label">IP地址</label>
+        <div class="layui-input-block">
+          <input type="text" id="detail-ip" class="layui-input" readonly>
+        </div>
+      </div>
+      <div class="layui-form-item">
+        <label class="layui-form-label">操作时间</label>
+        <div class="layui-input-block">
+          <input type="text" id="detail-time" class="layui-input" readonly>
+        </div>
+      </div>
+      <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">操作描述</label>
+        <div class="layui-input-block">
+          <textarea id="detail-description" class="layui-textarea" readonly></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 批量删除日志弹窗模板 -->
+  <template id="batch-delete-logs-template">
+    <div style="padding:20px;">
+      <form class="layui-form" id="batch-delete-logs-form">
+        <div class="layui-form-item">
+          <label class="layui-form-label">操作类型</label>
+          <div class="layui-input-block">
+            <select name="operation">
+              <option value="">全部</option>
+              <option value="login">登录</option>
+              <option value="logout">登出</option>
+              <option value="create">创建</option>
+              <option value="update">更新</option>
+              <option value="delete">删除</option>
+              <option value="backup">备份</option>
+              <option value="restore">恢复</option>
+              <option value="download">下载</option>
+              <option value="compare">比较</option>
+            </select>
+          </div>
+        </div>
+        <div class="layui-form-item">
+          <label class="layui-form-label">用户名</label>
+          <div class="layui-input-block">
+            <input type="text" name="username" placeholder="指定用户名（可选）" class="layui-input">
+          </div>
+        </div>
+        <div class="layui-form-item">
+          <label class="layui-form-label">角色</label>
+          <div class="layui-input-block">
+            <select name="role">
+              <option value="">全部</option>
+              <option value="admin">管理员</option>
+              <option value="doctor">医生</option>
+              <option value="patient">患者</option>
+            </select>
+          </div>
+        </div>
+        <div class="layui-form-item">
+          <label class="layui-form-label">起止日期</label>
+          <div class="layui-input-inline">
+            <input type="text" name="start_date" class="batch_delete_start_date" placeholder="开始日期" autocomplete="off" class="layui-input">
+          </div>
+          <div class="layui-input-inline">
+            <input type="text" name="end_date" class="batch_delete_end_date" placeholder="结束日期" autocomplete="off" class="layui-input">
+          </div>
+        </div>
+        <div class="layui-form-item">
+          <div class="layui-input-block">
+            <button class="layui-btn layui-btn-danger" lay-submit lay-filter="batch-delete-logs">确认删除</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </template>
+
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
+  <script>
+    layui.use(['element', 'form', 'laydate', 'layer'], function() {
+      var element = layui.element;
+      var form = layui.form;
+      var laydate = layui.laydate;
+      var layer = layui.layer;
+
+      // 开始日期选择器
+      laydate.render({
+        elem: '#start_date'
+      });
+      
+      // 结束日期选择器
+      laydate.render({
+        elem: '#end_date'
+      });
+      
+      // 批量删除日志弹窗内容（HTML字符串模板）
+      var batchDeleteLogsHtml = `
+        <div style="padding:20px;">
+          <form class="layui-form" id="batch-delete-logs-form">
+            <div class="layui-form-item">
+              <label class="layui-form-label">操作类型</label>
+              <div class="layui-input-block">
+                <select name="operation">
+                  <option value="">全部</option>
+                  <option value="login">登录</option>
+                  <option value="logout">登出</option>
+                  <option value="create">创建</option>
+                  <option value="update">更新</option>
+                  <option value="delete">删除</option>
+                  <option value="backup">备份</option>
+                  <option value="restore">恢复</option>
+                  <option value="download">下载</option>
+                  <option value="compare">比较</option>
+                </select>
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">用户名</label>
+              <div class="layui-input-block">
+                <input type="text" name="username" placeholder="指定用户名（可选）" class="layui-input">
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">角色</label>
+              <div class="layui-input-block">
+                <select name="role">
+                  <option value="">全部</option>
+                  <option value="admin">管理员</option>
+                  <option value="doctor">医生</option>
+                  <option value="patient">患者</option>
+                </select>
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">起止日期</label>
+              <div class="layui-input-inline">
+                <input type="text" name="start_date" class="batch_delete_start_date" placeholder="开始日期" autocomplete="off" class="layui-input">
+              </div>
+              <div class="layui-input-inline">
+                <input type="text" name="end_date" class="batch_delete_end_date" placeholder="结束日期" autocomplete="off" class="layui-input">
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <div class="layui-input-block">
+                <button class="layui-btn layui-btn-danger" lay-submit lay-filter="batch-delete-logs">确认删除</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      `;
+      
+      // 批量删除日志按钮事件
+      document.getElementById('batchDeleteLogsBtn').onclick = function() {
+        var index = layer.open({
+          type: 1,
+          title: '批量删除日志',
+          area: ['420px', '420px'],
+          content: batchDeleteLogsHtml,
+          success: function(layero, idx) {
+            form.render();
+            laydate.render({ elem: layero.find('.batch_delete_start_date')[0] });
+            laydate.render({ elem: layero.find('.batch_delete_end_date')[0] });
+            form.on('submit(batch-delete-logs)', function(data) {
+              layer.confirm('确定要批量删除符合条件的日志吗？此操作不可恢复！', function(confirmIdx) {
+                layer.close(confirmIdx);
+                layer.load(1);
+                $.ajax({
+                  url: '/api/admin/logs/batch_delete',
+                  method: 'POST',
+                  contentType: 'application/json',
+                  data: JSON.stringify(data.field),
+                  success: function(res) {
+                    layer.closeAll('loading');
+                    if(res.code === 0) {
+                      layer.msg(res.msg, {icon: 1});
+                      setTimeout(function(){ location.reload(); }, 1200);
+                    } else {
+                      layer.msg(res.msg || '删除失败', {icon: 2});
+                    }
+                  },
+                  error: function() {
+                    layer.closeAll('loading');
+                    layer.msg('请求失败', {icon: 2});
+                  }
+                });
+              });
+              return false;
+            });
+          }
+        });
+      };
+
+      // 显示日志详情
+      function showLogDetail(logId) {
+
+        layui.use('layer', function() {
+          var layer = layui.layer;
+          
+          // 实际应用中替换为AJAX请求获取详细数据
+          $.ajax({
+            url: "{{ url_for('admin_log_detail') }}",
+            type: "GET",
+            data: { log_id: logId },
+            success: function(res) {
+              if(res.code === 0) {
+                var log = res.data;
+                $('#detail-log-id').val(log.log_id);
+                $('#detail-user-id').val(log.user_id);
+                $('#detail-username').val(log.username);
+                $('#detail-operation').val(log.operation);
+                $('#detail-ip').val(log.ip);
+                $('#detail-time').val(log.create_time);
+                $('#detail-description').val(log.description);
+                
+                layer.open({
+                  type: 1,
+                  title: '日志详情',
+                  area: ['500px', '500px'],
+                  content: $('#log-detail-popup')
+                });
+              } else {
+                layer.msg('获取日志详情失败: ' + res.msg);
+              }
+            },
+            error: function() {
+              layer.msg('服务器错误，请稍后再试');
+            }
+          });
+        });
+      }
+      
+      // 初始化统计图表
+      initCharts();
+    });
+    
+    // 初始化统计图表
+    function initCharts() {
+      // 操作类型统计图
+      $.ajax({
+        url: "{{ url_for('admin_log_stats') }}",
+        type: "GET",
+        success: function(res) {
+          if(res.code === 0) {
+            // 渲染操作类型统计图
+            var operationChart = echarts.init(document.getElementById('operation-chart'));
+            // 英文转中文映射
+            var opMap = {
+              'login': '登录',
+              'logout': '登出',
+              'create': '创建',
+              'update': '更新',
+              'delete': '删除',
+              'backup': '备份',
+              'restore': '恢复',
+              'download': '下载',
+              'compare': '比较'
+            };
+            operationChart.setOption({
+              tooltip: {
+                trigger: 'item',
+                formatter: '{a} <br/>{b}: {c} ({d}%)'
+              },
+              legend: {
+                orient: 'vertical',
+                left: 10,
+                data: res.data.operation_types.map(function(item) { return opMap[item.name] || item.name; })
+              },
+              series: [
+                {
+                  name: '操作类型',
+                  type: 'pie',
+                  radius: ['50%', '70%'],
+                  avoidLabelOverlap: false,
+                  label: {
+                    show: false,
+                    position: 'center'
+                  },
+                  emphasis: {
+                    label: {
+                      show: true,
+                      fontSize: '18',
+                      fontWeight: 'bold'
+                    }
+                  },
+                  labelLine: {
+                    show: false
+                  },
+                  data: res.data.operation_types.map(function(item) { 
+                    return {
+                      value: item.count,
+                      name: opMap[item.name] || item.name
+                    };
+                  })
+                }
+              ]
+            });
+            
+            // 渲染用户操作排行图
+            var userChart = echarts.init(document.getElementById('user-chart'));
+            userChart.setOption({
+              grid: { left: 90 },
+              tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                  type: 'shadow'
+                }
+              },
+              xAxis: {
+                type: 'value'
+              },
+              yAxis: {
+                type: 'category',
+                data: res.data.user_stats.map(function(item) { return item.username; }),
+                axisLabel: {
+                  width: 100,
+                  overflow: 'truncate',
+                  formatter: function(value) { return value; },
+                  margin: 20
+                }
+              },
+              series: [
+                {
+                  name: '操作次数',
+                  type: 'bar',
+                  data: res.data.user_stats.map(function(item) { return item.count; })
+                }
+              ]
+            });
+            
+            // 渲染操作趋势图
+            var trendChart = echarts.init(document.getElementById('trend-chart'));
+            trendChart.setOption({
+              tooltip: {
+                trigger: 'axis'
+              },
+              xAxis: {
+                type: 'category',
+                data: res.data.trends.map(function(item) { return item.date; })
+              },
+              yAxis: {
+                type: 'value'
+              },
+              series: [
+                {
+                  name: '操作数量',
+                  type: 'line',
+                  data: res.data.trends.map(function(item) { return item.count; }),
+                  smooth: true
+                }
+              ]
+            });
+            
+            // 窗口大小变化时重新渲染图表
+            window.addEventListener('resize', function() {
+              operationChart.resize();
+              userChart.resize();
+              trendChart.resize();
+            });
+          }
+        }
+      });
+    }
+  </script>
+</body>
+
+</html>

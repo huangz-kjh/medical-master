@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="../static/img/icon.png">
+
+    <title>智慧影像平台</title>
+
+    <!-- 公共CSS库 -->
+    <link href="../static/download_style/css/all.min.css" rel="stylesheet"/>
+    <link href="../static/download_style/css/bootstrap.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- 自定义CSS -->
+    <link rel="stylesheet" href="../static/css/index.css">
+
+    <!-- 字体图标备用方案 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 检查字体图标是否正确加载
+            setTimeout(function () {
+                var testIcon = document.createElement('i');
+                testIcon.className = 'fas fa-user';
+                testIcon.style.visibility = 'hidden';
+                document.body.appendChild(testIcon);
+
+                var iconStyle = window.getComputedStyle(testIcon);
+                var isFontLoaded = iconStyle.fontFamily.includes('Font Awesome') ||
+                    iconStyle.fontFamily.includes('FontAwesome');
+
+                if (!isFontLoaded) {
+                    console.log('字体图标未正确加载，加载备用方案');
+                    // 加载备用CSS
+                    var link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = '../static/download_style/css/font-awesome-4.7.0.min.css';
+                    document.head.appendChild(link);
+                }
+
+                document.body.removeChild(testIcon);
+            }, 500);
+        });
+    </script>
+</head>
+<body>
+<header>
+    <div class="logo">
+        <img src="../static/img/医生.png" alt="Logo">
+        <h1>智慧影像平台</h1>
+    </div>
+    <div class="nav-links">
+        <a href="#" class="nav-link active" data-page="dashboard" data-url="/dashboard">
+            <i class="fas fa-home"></i> 工作台
+        </a>
+        {% if role == 'patient' %}
+        <a href="#" class="nav-link" data-page="personal" data-url="/personal/{{ patient_id }}">
+            <i class="fas fa-user-md"></i> 个人档案
+        </a>
+        <a href="#" class="nav-link" data-page="appointment" data-url="/appointments">
+            <i class="fas fa-calendar-check"></i> 预约挂号
+        </a>
+        <a href="#" class="nav-link" data-page="chat" data-url="/chat">
+            <i class="fas fa-comments"></i> 聊天助手
+        </a>
+        <a href="#" class="nav-link" data-page="patient-records" data-url="/personal_record/{{ patient_id }}">
+            <i class="fas fa-chart-bar"></i> 病历报告
+        </a>
+        {% elif role == 'doctor' %}
+        <a href="#" class="nav-link" data-page="patients" data-url="/patients">
+            <i class="fas fa-file-medical-alt"></i> 患者管理
+        </a>
+        <a href="#" class="nav-link" data-page="my-patients" data-url="/doctor/my-patients">
+            <i class="fas fa-users"></i> 我的患者
+        </a>
+        <a href="#" class="nav-link" data-page="doctor-appointments" data-url="/doctor/appointments">
+            <i class="fas fa-calendar-check"></i> 预约管理
+        </a>
+        <a href="#" class="nav-link" data-page="3d" data-url="/3d">
+            <i class="fas fa-cube"></i> 影像分析
+        </a>
+        <a href="#" class="nav-link" data-page="chat" data-url="/chat">
+            <i class="fas fa-comments"></i> 聊天助手
+        </a>
+        {% endif %}
+    </div>
+    <div class="user-actions">
+        <div class="notification-icon" id="notificationIcon">
+            <i class="fas fa-bell"></i>
+            <span class="notification-badge" id="notificationBadge" style="display: none;"></span>
+            <div id="notificationDropdown" class="notification-dropdown">
+                <div class="notification-header">
+                    <h3>通知</h3>
+                    <button id="markAllReadBtn" class="mark-all-read">全部标为已读</button>
+                </div>
+                <div id="notificationList" class="notification-list">
+                    <div class="notification-loading">加载中...</div>
+                </div>
+            </div>
+        </div>
+        <div class="user-avatar" id="userAvatar">
+            <a href="#" class="nav-link" data-page="profile" data-url="/user_profile">
+                <i class="fas fa-user"></i>
+            </a>
+            <div class="user-info-dropdown" id="userDropdown">
+                <div class="user-info-header">
+                    <i class="fas fa-user-circle"></i>
+                    <span>{{ user.real_name if user else username }}</span>
+                </div>
+                <div class="user-info-item">
+                    <span class="user-info-label">用户名：</span>
+                    <span id="user-username">{{ username }}</span>
+                </div>
+                <div class="user-info-item">
+                    <span class="user-info-label">角色：</span>
+                    <span id="user-role">
+                        {% if role == 'patient' %}
+                            患者
+                        {% elif role == 'doctor' %}
+                            医生
+                        {% else %}
+                            {{ role }}
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="user-info-item">
+                    <span class="user-info-label">姓名：</span>
+                    <span id="user-realname">{{ user.real_name if user else '' }}</span>
+                </div>
+                <div class="user-info-divider"></div>
+                <div class="user-info-item user-logout">
+                    <a href="/logout" class="logout-link" id="logoutBtn"
+                       onclick="window.top.location.href='/logout'; return false;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>退出登录</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="main-content">
+    <iframe id="content-frame" name="content-frame" frameborder="0" width="100%" height="100%"
+            style="opacity: 0;"></iframe>
+</div>
+
+<!-- 公共JS库 -->
+<script src="../static/download_style/js/bootstrap.bundle.min.js"></script>
+<script src="../static/download_style/js/echarts.min.js"></script>
+
+<!-- 自定义JS -->
+<script src="../static/js/index.js"></script>
+</body>
+</html>

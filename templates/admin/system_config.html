@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>系统配置</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link href="//unpkg.com/layui@2.10.1/dist/css/layui.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/layui/2.5.5/layui.min.js"></script>
+
+    <!-- 字体图标备用方案 -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 检查字体图标是否正确加载
+        setTimeout(function() {
+            var testIcon = document.createElement('i');
+            testIcon.className = 'fas fa-user';
+            testIcon.style.visibility = 'hidden';
+            document.body.appendChild(testIcon);
+            
+            var iconStyle = window.getComputedStyle(testIcon);
+            var isFontLoaded = iconStyle.fontFamily.includes('Font Awesome') || 
+                               iconStyle.fontFamily.includes('FontAwesome');
+            
+            if (!isFontLoaded) {
+                console.log('字体图标未正确加载，加载备用方案');
+                // 加载备用CSS
+                var link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = '../static/download_style/css/font-awesome-4.7.0.min.css';
+                document.head.appendChild(link);
+            }
+            
+            document.body.removeChild(testIcon);
+        }, 500);
+    });
+    </script>
+    </head>
+
+<body>
+  <div class="layui-layout layui-layout-admin">
+    <!-- 顶部导航 -->
+    <div class="layui-header">
+      <div class="layui-logo">医疗系统管理后台</div>
+      <ul class="layui-nav layui-layout-right">
+        <li class="layui-nav-item">
+          <a href="javascript:;">
+            <img src="/static/img/icon.png" class="layui-nav-img">
+            {{ current_user.username }}
+          </a>
+          <dl class="layui-nav-child">
+            <dd><a href="{{ url_for('logout') }}">退出登录</a></dd>
+          </dl>
+        </li>
+      </ul>
+    </div>
+
+    <!-- 左侧菜单 -->
+    <div class="layui-side layui-bg-black">
+      <div class="layui-side-scroll">
+        <ul class="layui-nav layui-nav-tree" data-lay-filter="test">
+          <li class="layui-nav-item {{ 'layui-this' if request.endpoint == 'admin_index' else '' }}">
+            <a href="{{ url_for('admin_index') }}"><i class="layui-icon">&#xe68e;</i> 首页</a>
+          </li>
+          <li class="layui-nav-item {{ 'layui-nav-itemed' if request.endpoint in ['admin_user_list','admin_user_add'] else '' }}">
+            <a href="javascript:;">用户管理</a>
+            <dl class="layui-nav-child">
+              <dd class="{{ 'layui-this' if request.endpoint == 'admin_user_list' else '' }}"><a href="{{ url_for('admin_user_list') }}">用户列表</a></dd>
+              <dd class="{{ 'layui-this' if request.endpoint == 'admin_user_add' else '' }}"><a href="{{ url_for('admin_user_add') }}">添加用户</a></dd>
+            </dl>
+          </li>
+          <li class="layui-nav-item {{ 'layui-nav-itemed' if request.endpoint in ['admin_system_config','admin_logs','admin_backup'] else '' }}">
+            <a href="javascript:;">系统设置</a>
+            <dl class="layui-nav-child">
+              <dd class="{{ 'layui-this' if request.endpoint == 'admin_system_config' else '' }}"><a href="{{ url_for('admin_system_config') }}">系统配置</a></dd>
+              <dd class="{{ 'layui-this' if request.endpoint == 'admin_logs' else '' }}"><a href="{{ url_for('admin_logs') }}">操作日志</a></dd>
+              <dd class="{{ 'layui-this' if request.endpoint == 'admin_backup' else '' }}"><a href="{{ url_for('admin_backup') }}">数据备份</a></dd>
+            </dl>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+
+    <!-- 内容主体区域 -->
+    <div class="layui-body">
+      <div style="padding: 15px;">
+        <div class="layui-card">
+          <div class="layui-card-header">系统配置</div>
+          <div class="layui-card-body">
+            <form class="layui-form" action="{{ url_for('admin_system_config') }}" method="post">
+              <div class="layui-form-item">
+                <label class="layui-form-label">系统名称</label>
+                <div class="layui-input-block">
+                  <input type="text" name="system_name" required lay-verify="required" placeholder="请输入系统名称"
+                    autocomplete="off" class="layui-input" value="{{ config.system_name }}">
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <label class="layui-form-label">系统描述</label>
+                <div class="layui-input-block">
+                  <textarea name="system_description" placeholder="请输入系统描述"
+                    class="layui-textarea">{{ config.system_description }}</textarea>
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <label class="layui-form-label">系统Logo</label>
+                <div class="layui-input-block">
+                  <input type="text" name="system_logo" placeholder="请输入Logo URL" autocomplete="off" class="layui-input"
+                    value="{{ config.system_logo }}">
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <label class="layui-form-label">系统版本</label>
+                <div class="layui-input-block">
+                  <input type="text" name="system_version" required lay-verify="required" placeholder="请输入系统版本"
+                    autocomplete="off" class="layui-input" value="{{ config.system_version }}">
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <label class="layui-form-label">系统状态</label>
+                <div class="layui-input-block">
+                  <input type="checkbox" name="system_status" lay-skin="switch" lay-text="开启|关闭" {{ 'checked' if
+                    config.system_status else '' }}>
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <div class="layui-input-block">
+                  <button class="layui-btn" lay-submit lay-filter="formDemo">保存配置</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    layui.use(['element', 'form', 'layer'], function() {
+      var element = layui.element;
+      var form = layui.form;
+      var layer = layui.layer;
+      
+      // 表单成功提交后的处理
+      {% if success_message %}
+      layer.msg('{{ success_message }}', {icon: 1});
+      {% endif %}
+      
+      {% if error_message %}
+      layer.msg('{{ error_message }}', {icon: 2});
+      {% endif %}
+    });
+  </script>
+</body>
+
+</html>

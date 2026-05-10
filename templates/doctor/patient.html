@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>患者档案</title>
+    <link href="../static/download_style/css/bootstrap.min.css" rel="stylesheet"/>
+    <script src="../static/download_style/js/bootstrap.bundle.min.js"></script>
+    <script src="../static/download_style/js/echarts.min.js"></script>
+    <link href="../static/download_style/css/all.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link href="../static/css/patient.css" rel="stylesheet"/>
+    <style>
+        .bg-cyan {
+            background-color: #56CCF2 !important;
+        }
+
+        .bg-blue {
+            background-color: #5E97F6 !important;
+        }
+
+        .bg-green {
+            background-color: #66BB6A !important;
+        }
+
+        .bg-orange {
+            background-color: #FDA085 !important;
+        }
+
+        .bg-red {
+            background-color: #FF7B7B !important;
+        }
+
+        .bg-purple {
+            background-color: #B39DDB !important;
+        }
+
+        /* 状态标签样式改进 */
+        .badge {
+            padding: 0.55em 0.9em;
+            font-weight: 500;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 搜索框简约淡雅美化 */
+        .search-box {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 18px;
+            border: 1.5px solid #e3e8ee;
+            box-shadow: none;
+            padding: 18px 24px 18px 24px;
+            display: flex;
+            align-items: center;
+        }
+        .search-box .input-group {
+            border-radius: 24px;
+            box-shadow: none;
+            background: #f6f8fa;
+            border: 1px solid #e3e8ee;
+            padding: 2px 8px 2px 2px;
+            transition: border-color 0.2s;
+        }
+        .search-box .input-group:focus-within {
+            border-color: #b3d8f6;
+            background: #fafdff;
+        }
+        .search-box .form-control {
+            border: none;
+            background: transparent;
+            box-shadow: none;
+            font-size: 16px;
+            border-radius: 24px;
+            padding: 10px 12px;
+            color: #333;
+        }
+        .search-box .form-control:focus {
+            background: transparent;
+            box-shadow: none;
+        }
+        .search-box .input-group-text {
+            background: transparent;
+            border: none;
+            color: #7da2c1;
+            font-size: 20px;
+            padding-left: 12px;
+        }
+        .search-box .search-btn {
+            border-radius: 24px;
+            background: linear-gradient(90deg, #e3f0fa 0%, #fafdff 100%);
+            color: #3a6ea5;
+            border: 1px solid #e3e8ee;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 10px 28px;
+            margin-left: 12px;
+            transition: background 0.2s, color 0.2s, border-color 0.2s;
+            box-shadow: none;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            white-space: nowrap;
+        }
+        .search-box .search-btn i {
+            margin-right: 6px;
+            font-size: 18px;
+        }
+        .search-box .search-btn:hover {
+            background: #eaf6fd;
+            color: #2566a6;
+            border-color: #b3d8f6;
+        }
+        /* 统计卡片美化 */
+        .stats-container {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            margin: 32px 0 36px 0;
+        }
+        .stat-card {
+            flex: 1 1 180px;
+            min-width: 180px;
+            max-width: 260px;
+            background: #fff;
+            border-radius: 22px;
+            box-shadow: 0 4px 18px 0 rgba(80,120,200,0.07);
+            padding: 28px 24px 20px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+            transition: box-shadow 0.2s, transform 0.2s;
+            border-left: 4px solid #e3e8ee;
+        }
+        .stat-card.total { border-left-color: #6cb6ff; }
+        .stat-card.treatment { border-left-color: #ffd36c; }
+        .stat-card.completed { border-left-color: #7edc8a; }
+        .stat-card.followup { border-left-color: #ffbfae; }
+        .stat-card.urgent { border-left-color: #ff8a8a; }
+        .stat-card:hover {
+            box-shadow: 0 8px 32px 0 rgba(80,120,200,0.13);
+            transform: translateY(-2px) scale(1.03);
+        }
+        .stat-title {
+            color: #8a99b3;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #2d3a4a;
+            margin-bottom: 0;
+            margin-top: 2px;
+        }
+        .stat-icon {
+            position: absolute;
+            right: 24px;
+            bottom: 18px;
+            font-size: 2.6rem;
+            opacity: 0.18;
+            pointer-events: none;
+        }
+        .stat-card.completed .stat-icon { color: #7edc8a; }
+        .stat-card.treatment .stat-icon { color: #ffd36c; }
+        .stat-card.followup .stat-icon { color: #ffbfae; }
+        .stat-card.urgent .stat-icon { color: #ff8a8a; }
+        .stat-card.total .stat-icon { color: #6cb6ff; }
+        /* 分页按钮美化 */
+        #pagination-container {
+            display: flex;
+            gap: 10px;
+        }
+        #pagination-container .btn {
+            border-radius: 12px;
+            min-width: 40px;
+            height: 40px;
+            font-size: 18px;
+            font-weight: 500;
+            padding: 0 0.5em;
+            transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+            box-shadow: none;
+            border: 1.5px solid #2196f3;
+            color: #2196f3;
+            background: #fff;
+        }
+        #pagination-container .btn:hover {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-color: #1976d2;
+        }
+        #pagination-container .btn-primary {
+            background: #2196f3;
+            color: #fff;
+            border-color: #2196f3;
+            box-shadow: 0 2px 8px rgba(33,150,243,0.08);
+        }
+        #pagination-container .btn-primary:hover {
+            background: #1976d2;
+            border-color: #1976d2;
+        }
+        /* 整体布局优化 */
+        .main-section {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+        .stats-container {
+            margin-top: 36px;
+            margin-bottom: 36px;
+        }
+        .search-section {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 36px;
+        }
+        .patient-list-section {
+            margin-top: 0;
+            margin-bottom: 48px;
+        }
+        .card {
+            border-radius: 18px;
+            box-shadow: 0 2px 12px 0 rgba(80,120,200,0.04);
+            border: none;
+        }
+        /* 禁止页面非表单元素出现文本输入光标和选中提示符 */
+        body, .main-section, .stats-container, .stat-card, .search-section, .search-box, .patient-list-section, .card, .stat-title, .stat-value, .stat-icon, .btn, .table, .table th, .table td {
+            user-select: none !important;
+            -webkit-user-select: none !important;
+            -ms-user-select: none !important;
+            cursor: default !important;
+        }
+        input, textarea, select, .form-control, .form-select, .search-box .form-control, .search-box input, .search-box textarea {
+            user-select: text !important;
+            cursor: text !important;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+        .placeholder-glow .placeholder {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 37%, #f0f0f0 63%);
+            background-size: 400% 100%;
+            animation: placeholderShimmer 1.2s linear infinite;
+        }
+        @keyframes placeholderShimmer {
+            0% { background-position: 100% 0; }
+            100% { background-position: 0 0; }
+        }
+    </style>
+    <script>
+        // 显示提示弹窗
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+            alertDiv.style.zIndex = '9999';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            document.body.appendChild(alertDiv);
+
+            // 3秒后自动关闭
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+
+        // 处理删除操作
+        function handleDelete(patientId) {
+            if (!confirm('确认删除该患者吗？此操作将删除所有相关记录且无法恢复！')) {
+                return false;
+            }
+
+            fetch(`/patients/${patientId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showAlert(data.message, 'success');
+                        setTimeout(() => {
+                            window.location.href = data.redirect;
+                        }, 1500);
+                    } else {
+                        showAlert(data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    showAlert('删除操作失败，请重试', 'danger');
+                    console.error('Error:', error);
+                });
+            return false;
+        }
+
+        // 处理编辑操作
+        function handleEdit(patientId) {
+            const form = document.getElementById('editForm');
+            const formData = new FormData(form);
+
+            fetch(`/patients/${patientId}/edit`, {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showAlert(data.message, 'success');
+                        setTimeout(() => {
+                            window.location.href = data.redirect;
+                        }, 1500);
+                    } else {
+                        showAlert(data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    showAlert('更新操作失败，请重试', 'danger');
+                    console.error('Error:', error);
+                });
+        }
+    </script>
+
+    <!-- 字体图标备用方案 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 检查字体图标是否正确加载
+            setTimeout(function () {
+                var testIcon = document.createElement('i');
+                testIcon.className = 'fas fa-user';
+                testIcon.style.visibility = 'hidden';
+                document.body.appendChild(testIcon);
+
+                var iconStyle = window.getComputedStyle(testIcon);
+                var isFontLoaded = iconStyle.fontFamily.includes('Font Awesome') ||
+                    iconStyle.fontFamily.includes('FontAwesome');
+
+                if (!isFontLoaded) {
+                    console.log('字体图标未正确加载，加载备用方案');
+                    // 加载备用CSS
+                    var link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = '../static/download_style/css/font-awesome-4.7.0.min.css';
+                    document.head.appendChild(link);
+                }
+
+                document.body.removeChild(testIcon);
+            }, 500);
+        });
+    </script>
+</head>
+<body class="bg-light">
+<!-- 导航栏 -->
+<nav class="navbar custom-navbar navbar-expand-lg navbar-dark mb-4">
+    <div class="container">
+        <div class="navbar-brand" href="#">
+            <i class="fas fa-brain me-2"></i>
+            患者管理
+        </div>
+        <button class="navbar-toggler" data-bs-target="#navbarNav" data-bs-toggle="collapse" type="button">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</nav>
+<!--  &lt;!&ndash; 错误信息显示区域 &ndash;&gt;-->
+<!--  {% with messages = get_flashed_messages(with_categories=true) %}-->
+<!--  {% if messages %}-->
+<!--  <div class="container">-->
+<!--    {% for category, message in messages %}-->
+<!--    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">-->
+<!--      {{ message }}-->
+<!--      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>-->
+<!--    </div>-->
+<!--    {% endfor %}-->
+<!--  </div>-->
+<!--  {% endif %}-->
+<!--  {% endwith %}-->
+<div class="main-section">
+<div class="stats-container">
+    <div class="stat-card total">
+        <div>
+            <div class="stat-title">总患者数</div>
+            <div class="stat-value">{{ total_patients }}</div>
+        </div>
+        <i class="fas fa-users stat-icon"></i>
+    </div>
+    <div class="stat-card treatment">
+        <div>
+            <div class="stat-title">治疗中</div>
+            <div class="stat-value">{{ in_treatment_count }}</div>
+        </div>
+        <i class="fas fa-procedures stat-icon"></i>
+    </div>
+    <div class="stat-card completed">
+        <div>
+            <div class="stat-title">完成诊疗</div>
+            <div class="stat-value">{{ completed_count }}</div>
+        </div>
+        <i class="fas fa-check-circle stat-icon"></i>
+    </div>
+    <div class="stat-card followup">
+        <div>
+            <div class="stat-title">待随访</div>
+            <div class="stat-value">{{ followup_count }}</div>
+        </div>
+        <i class="fas fa-clock stat-icon"></i>
+    </div>
+    <div class="stat-card urgent">
+        <div>
+            <div class="stat-title">需紧急处理</div>
+            <div class="stat-value">{{ urgent_count }}</div>
+        </div>
+        <i class="fas fa-exclamation-circle stat-icon"></i>
+    </div>
+</div>
+<!-- 搜索区 -->
+<div class="search-section">
+    <div class="search-box">
+        <form action="/patients" class="d-flex align-items-center w-100" method="get" style="gap: 12px;">
+            <div class="input-group flex-grow-1" style="max-width: 600px;">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input class="form-control" name="search"
+                       placeholder="搜索患者姓名、联系方式、紧急联系人或ID" type="text"
+                       value="{{ request.args.get('search', '') }}"/>
+            </div>
+            <button class="search-btn" type="submit" id="searchBtn">
+                <span id="searchBtnText"><i class="fas fa-search me-1"></i>搜索</span>
+                <span id="searchBtnLoading" style="display:none;"><i class="fas fa-spinner fa-spin me-1"></i>搜索中...</span>
+            </button>
+        </form>
+    </div>
+</div>
+<!-- 搜索骨架屏 -->
+<div id="searchSkeleton" style="display:none; max-width: 1000px; margin: 0 auto 24px auto;">
+    <div class="placeholder-glow" style="padding: 32px 0;">
+        <span class="placeholder col-12" style="height:40px;display:block;margin-bottom:8px;"></span>
+        <span class="placeholder col-12" style="height:40px;display:block;margin-bottom:8px;"></span>
+        <span class="placeholder col-12" style="height:40px;display:block;margin-bottom:8px;"></span>
+    </div>
+</div>
+<!-- 患者列表区 -->
+<div class="patient-list-section" id="patientListSection">
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="m-0"><i class="fas fa-user-injured me-2"></i>患者档案列表</h5>
+        </div>
+        <div class="d-flex align-items-center" style="gap: 10px;">
+            <label for="page-size-select" class="form-label mb-0" style="font-size: 14px; color: #888;">每页显示</label>
+            <select id="page-size-select" class="form-select form-select-sm" style="width: 70px;" onchange="onPageSizeChange(this)">
+                <option value="5" selected>5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+            </select>
+            <span style="font-size: 14px; color: #888;">条</span>
+            <a class="btn btn-sm btn-primary ms-2" href="{{ url_for('add_patient') }}">
+                <i class="fas fa-plus me-1"></i>添加患者
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="bg-light">
+                <tr>
+                    <th class="ps-4">患者姓名</th>
+                    <th>年龄</th>
+                    <th>性别</th>
+                    <th>血型</th>
+                    <th>联系方式</th>
+                    <th>状态</th>
+                    <th class="text-center">操作</th>
+                </tr>
+                </thead>
+                <tbody id="patients-tbody">
+                {% for patient in patients %}
+                <tr class="patient-info align-middle">
+                    <td class="ps-4">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar me-3 bg-{{ 'primary' if patient.gender == '男' else 'danger' }} text-white rounded-circle d-flex align-items-center justify-content-center"
+                                 style="width: 40px; height: 40px;">
+                                {{ patient.name[0] }}
+                            </div>
+                            <div>
+                                <span class="fw-bold">{{ patient.name }}</span>
+                                <div class="small text-muted">
+                                    <span>患者ID: {{ patient.patient_id }}</span>
+                                    {% if patient.user %}
+                                    <span class="ms-2">用户名: {{ patient.user.username }}</span>
+                                    <span class="ms-2">用户ID: {{ patient.user.user_id }}</span>
+                                    {% endif %}
+                                </div>
+                                {% if patient.medical_history %}
+                                {% for history in patient.medical_history %}
+                                {% if history.neurological_conditions %}
+                                <div class="small text-muted">{{ history.neurological_conditions }}</div>
+                                {% endif %}
+                                {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ patient.age }} 岁</td>
+                    <td>
+<span class="badge gender-badge-{{ 'male' if patient.gender == '男' else 'female' }}">
+<i class="fas fa-{{ 'mars' if patient.gender == '男' else 'venus' }} me-1"></i>
+                  {{ patient.gender }}
+                </span>
+                    </td>
+                    <td>{{ patient.blood_type or '未知' }}血型</td>
+                    <td>
+                        <div>{{ patient.contact_info }}</div>
+                        {% if patient.emergency_contact %}
+                        <small class="text-muted">紧急: {{ patient.emergency_contact }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% set status_color = {
+                        '新患者': 'cyan',
+                        '治疗中': 'red',
+                        '已完成': 'green',
+                        '治疗完成': 'green',
+                        '待随访': 'orange',
+                        '随访中': 'orange',
+                        '待就诊': 'blue',
+                        '就诊中': 'orange',
+                        '已出院': 'purple',
+                        '已转诊': 'secondary',
+                        '需紧急处理': 'danger'
+                        }[patient.status] %}
+                        <span class="badge bg-{{ status_color }}">{{ patient.status }}</span>
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group">
+                            <a class="btn btn-sm btn-outline-info"
+                               href="{{ url_for('patient_medical_record', patient_id=patient.patient_id) }}">
+                                <i class="fas fa-eye me-1"></i>查看
+                            </a>
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="{{ url_for('edit_patient', patient_id=patient.patient_id) }}">
+                                <i class="fas fa-edit me-1"></i>编辑
+                            </a>
+                            <!-- <a href="{{ url_for('medical_patient_treatment', patient_id=patient.patient_id) }}"
+                                                           class="btn btn-sm btn-outline-success">
+                                                            <i class="fas fa-stethoscope me-1"></i>治疗
+                                                        </a> -->
+                            <form action="#" method="post" onsubmit="return handleDelete('{{ patient.patient_id }}')"
+                                  style="display:inline;">
+                                <button class="btn btn-sm btn-outline-danger" type="submit">
+                                    <i class="fas fa-trash-alt me-1"></i>删除
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td class="text-center py-5" colspan="7">
+                        <div class="d-flex flex-column align-items-center">
+                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">没有找到患者记录</h5>
+                            <p class="text-muted">尝试使用不同的搜索条件或添加新患者</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="d-flex justify-content-center align-items-center py-3">
+            <div id="pagination-container"></div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+<script>
+// 分页逻辑
+let allPatients = [];
+let currentPage = 1;
+let pageSize = 5;
+function renderPatients() {
+    const tbody = document.getElementById('patients-tbody');
+    tbody.innerHTML = '';
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+    const pagePatients = allPatients.slice(start, end);
+    for (const row of pagePatients) {
+        tbody.appendChild(row.cloneNode(true));
+    }
+    renderPagination();
+}
+function renderPagination() {
+    const total = allPatients.length;
+    const pageCount = Math.ceil(total / pageSize);
+    const container = document.getElementById('pagination-container');
+    container.innerHTML = '';
+    for (let i = 1; i <= pageCount; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.className = 'btn btn-sm' + (i === currentPage ? ' btn-primary' : ' btn-outline-primary');
+        btn.onclick = () => { currentPage = i; renderPatients(); };
+        container.appendChild(btn);
+    }
+}
+function onPageSizeChange(sel) {
+    pageSize = parseInt(sel.value);
+    currentPage = 1;
+    renderPatients();
+}
+document.addEventListener('DOMContentLoaded', function() {
+    const tbody = document.getElementById('patients-tbody');
+    allPatients = Array.from(tbody.children);
+    renderPatients();
+});
+</script>
+<script>
+document.querySelector('.search-box form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const searchVal = this.search.value.trim();
+    // 1. 按钮loading
+    document.getElementById('searchBtn').disabled = true;
+    document.getElementById('searchBtnText').style.display = 'none';
+    document.getElementById('searchBtnLoading').style.display = '';
+    
+    // 2. 显示骨架屏，隐藏整个患者列表区域
+    document.getElementById('patientListSection').style.display = 'none';
+    document.getElementById('searchSkeleton').style.display = '';
+    
+    fetch(`/patients/search_partial?search=${encodeURIComponent(searchVal)}`)
+        .then(res => res.text())
+        .then(html => {
+            // 3. 恢复按钮
+            document.getElementById('searchBtn').disabled = false;
+            document.getElementById('searchBtnText').style.display = '';
+            document.getElementById('searchBtnLoading').style.display = 'none';
+            
+            // 4. 隐藏骨架，显示患者列表并淡入
+            document.getElementById('searchSkeleton').style.display = 'none';
+            const tbody = document.getElementById('patients-tbody');
+            tbody.innerHTML = html;
+            document.getElementById('patientListSection').style.display = '';
+            document.getElementById('patientListSection').classList.add('fade-in');
+            setTimeout(() => document.getElementById('patientListSection').classList.remove('fade-in'), 600);
+            
+            // 如有分页逻辑，需重置分页
+            if (typeof allPatients !== 'undefined') {
+                allPatients = Array.from(tbody.children);
+                currentPage = 1;
+                renderPatients();
+            }
+        });
+});
+</script>
+</body>
+</html>

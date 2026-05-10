@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>用户管理</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link href="//unpkg.com/layui@2.10.1/dist/css/layui.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/layui/2.5.5/layui.min.js"></script>
+
+    <!-- 字体图标备用方案 -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 检查字体图标是否正确加载
+        setTimeout(function() {
+            var testIcon = document.createElement('i');
+            testIcon.className = 'fas fa-user';
+            testIcon.style.visibility = 'hidden';
+            document.body.appendChild(testIcon);
+            
+            var iconStyle = window.getComputedStyle(testIcon);
+            var isFontLoaded = iconStyle.fontFamily.includes('Font Awesome') || 
+                               iconStyle.fontFamily.includes('FontAwesome');
+            
+            if (!isFontLoaded) {
+                console.log('字体图标未正确加载，加载备用方案');
+                // 加载备用CSS
+                var link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = '../static/download_style/css/font-awesome-4.7.0.min.css';
+                document.head.appendChild(link);
+            }
+            
+            document.body.removeChild(testIcon);
+        }, 500);
+    });
+    </script>
+    <style>
+      /* 清新简约色系美化 */
+      body { background: #f6f8fa; }
+      .layui-card { box-shadow: 0 2px 8px rgba(30,144,255,0.06); border-radius: 10px; }
+      .layui-card-header { background: #e6f7ff; color: #1890ff; font-weight: 600; border-radius: 10px 10px 0 0; }
+      .layui-table { background: #fff; border-radius: 8px; overflow: hidden; }
+      .layui-table th, .layui-table td { border: none; }
+      .layui-btn { border-radius: 6px; }
+      .layui-btn-primary { background: #f0f5ff; color: #1890ff; border: none; }
+      .layui-badge { border-radius: 6px; font-size: 13px; }
+      .layui-bg-green { background: #52c41a!important; }
+      .layui-bg-gray { background: #d9d9d9!important; color: #888!important; }
+      .batch-bar { margin-bottom: 12px; }
+      .user-checkbox, #selectAllUsers { display: none; }
+      .batch-mode .user-checkbox, .batch-mode #selectAllUsers { display: inline-block; }
+      .batch-bar .layui-btn { margin-right: 8px; }
+      /* 全局去除点击时的输入提示符 */
+      input:focus, button:focus, a:focus, select:focus, textarea:focus {
+        outline: none !important;
+        box-shadow: none !important;
+      }
+    </style>
+    </head>
+
+<body>
+  <div class="layui-layout layui-layout-admin">
+    <!-- 顶部导航 -->
+    <div class="layui-header">
+      <div class="layui-logo">医疗系统管理后台</div>
+      <ul class="layui-nav layui-layout-right">
+        <li class="layui-nav-item">
+          <a href="javascript:;">
+            <img src="/static/img/icon.png" class="layui-nav-img">
+            {{ current_user.username }}
+          </a>
+          <dl class="layui-nav-child">
+            <dd><a href="{{ url_for('logout') }}">退出登录</a></dd>
+          </dl>
+        </li>
+      </ul>
+    </div>
+
+    <!-- 左侧菜单 -->
+    <div class="layui-side layui-bg-black">
+      <div class="layui-side-scroll">
+        <ul class="layui-nav layui-nav-tree" data-lay-filter="test">
+          <li class="layui-nav-item {{ 'layui-this' if request.endpoint == 'admin_index' else '' }}">
+            <a href="{{ url_for('admin_index') }}"><i class="layui-icon">&#xe68e;</i> 首页</a>
+          </li>
+          <li class="layui-nav-item {{ 'layui-nav-itemed' if request.endpoint in ['admin_user_list','admin_user_add'] else '' }}">
+            <a href="javascript:;">用户管理</a>
+            <dl class="layui-nav-child">
+              <dd class="{{ 'layui-this' if request.endpoint == 'admin_user_list' else '' }}"><a href="{{ url_for('admin_user_list') }}">用户列表</a></dd>
+              <dd class="{{ 'layui-this' if request.endpoint == 'admin_user_add' else '' }}"><a href="{{ url_for('admin_user_add') }}">添加用户</a></dd>
+            </dl>
+          </li>
+          <li class="layui-nav-item {{ 'layui-nav-itemed' if request.endpoint in ['admin_system_config','admin_logs','admin_backup'] else '' }}">
+            <a href="javascript:;">系统设置</a>
+            <dl class="layui-nav-child">
+              <dd class="{{ 'layui-this' if request.endpoint == 'admin_system_config' else '' }}"><a href="{{ url_for('admin_system_config') }}">系统配置</a></dd>
+              <dd class="{{ 'layui-this' if request.endpoint == 'admin_logs' else '' }}"><a href="{{ url_for('admin_logs') }}">操作日志</a></dd>
+              <dd class="{{ 'layui-this' if request.endpoint == 'admin_backup' else '' }}"><a href="{{ url_for('admin_backup') }}">数据备份</a></dd>
+            </dl>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+
+    <!-- 内容主体区域 -->
+    <div class="layui-body">
+      <div style="padding: 15px;">
+        <div class="layui-card">
+          <div class="layui-card-header">用户列表</div>
+          <div class="layui-card-body">
+            <div class="batch-bar">
+              <button id="toggleBatchBtn" class="layui-btn layui-btn-primary"><i class="layui-icon">&#xe62d;</i> 批量操作</button>
+              <button id="batchEnableBtn" class="layui-btn layui-btn-sm layui-btn-normal" style="display:none;"><i class="layui-icon">&#xe605;</i> 批量启用</button>
+              <button id="batchDisableBtn" class="layui-btn layui-btn-sm layui-btn-warm" style="display:none;"><i class="layui-icon">&#xe601;</i> 批量禁用</button>
+              <button id="batchDeleteBtn" class="layui-btn layui-btn-sm layui-btn-danger" style="display:none;"><i class="layui-icon">&#xe640;</i> 批量删除</button>
+            </div>
+            <table class="layui-table" id="userTable">
+              <colgroup>
+                <col width="40">
+                <col width="150">
+                <col width="150">
+                <col width="100">
+                <col width="200">
+                <col width="100">
+                <col>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th><input type="checkbox" id="selectAllUsers"></th>
+                  <th>用户名</th>
+                  <th>真实姓名</th>
+                  <th>角色</th>
+                  <th>邮箱</th>
+                  <th>状态</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for user in users %}
+                <tr>
+                  <td><input type="checkbox" class="user-checkbox" value="{{ user.user_id }}" {% if user.role == 'admin' %}disabled{% endif %}></td>
+                  <td>{{ user.username }}</td>
+                  <td>{{ user.real_name }}</td>
+                  <td>{{ user.role }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>
+                    {% if user.is_active %}
+                    <span class="layui-badge layui-bg-green">正常</span>
+                    {% else %}
+                    <span class="layui-badge layui-bg-gray">禁用</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div class="layui-btn-group">
+                      <a href="{{ url_for('admin_user_edit', user_id=user.user_id) }}" class="layui-btn layui-btn-sm">编辑</a>
+                      <button class="layui-btn layui-btn-sm layui-btn-danger" onclick="confirmDelete('{{ user.user_id }}')">删除</button>
+                      <form id="delete-form-{{ user.user_id }}" action="{{ url_for('admin_user_delete', user_id=user.user_id) }}" method="post" style="display: none;"></form>
+                      <button class="layui-btn layui-btn-sm layui-btn-warm" onclick="confirmResetPassword('{{ user.user_id }}')">重置密码</button>
+                      <form id="reset-form-{{ user.user_id }}" action="{{ url_for('admin_reset_password', user_id=user.user_id) }}" method="post" style="display: none;"></form>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    layui.use(['element', 'layer', 'form'], function () {
+      var element = layui.element;
+      var layer = layui.layer;
+      var form = layui.form;
+      var batchMode = false;
+      var $table = document.getElementById('userTable');
+      var $toggleBatchBtn = document.getElementById('toggleBatchBtn');
+      var $batchBtns = [
+        document.getElementById('batchEnableBtn'),
+        document.getElementById('batchDisableBtn'),
+        document.getElementById('batchDeleteBtn')
+      ];
+
+      // 删除用户确认
+      window.confirmDelete = function(userId) {
+        layer.confirm('确定要删除此用户吗？此操作不可恢复!', {
+          btn: ['确定', '取消']
+        }, function() {
+          document.getElementById('delete-form-' + userId).submit();
+        });
+      };
+
+      // 重置密码确认
+      window.confirmResetPassword = function(userId) {
+        layer.confirm('确定要将此用户密码重置为 123456 吗？', {
+          btn: ['确定', '取消']
+        }, function() {
+          document.getElementById('reset-form-' + userId).submit();
+        });
+      };
+
+      $toggleBatchBtn.onclick = function() {
+        batchMode = !batchMode;
+        if (batchMode) {
+          document.body.classList.add('batch-mode');
+          $batchBtns.forEach(btn => btn.style.display = '');
+          $toggleBatchBtn.innerHTML = '<i class="layui-icon">&#xe69c;</i> 取消批量';
+        } else {
+          document.body.classList.remove('batch-mode');
+          $batchBtns.forEach(btn => btn.style.display = 'none');
+          $toggleBatchBtn.innerHTML = '<i class="layui-icon">&#xe62d;</i> 批量操作';
+          document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = false);
+          document.getElementById('selectAllUsers').checked = false;
+        }
+      };
+
+      // 全选
+      document.getElementById('selectAllUsers').onclick = function() {
+        var checked = this.checked;
+        document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = checked);
+      };
+
+      // 批量操作
+      function getSelectedUsers() {
+        return Array.from(document.querySelectorAll('.user-checkbox:checked')).map(cb => cb.value);
+      }
+      $batchBtns[0].onclick = function() {
+        var ids = getSelectedUsers();
+        if (!ids.length) return layer.msg('请选择用户', {icon: 0});
+        layer.confirm('确定要批量启用选中用户吗？', function(idx) {
+          layer.close(idx);
+          layer.load(1);
+          $.ajax({
+            url: '/api/admin/users/batch_update',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({user_ids: ids, action: 'enable'}),
+            success: function(res) {
+              layer.closeAll('loading');
+              if (res.code === 0) {
+                layer.msg('操作成功', {icon: 1});
+                location.reload();
+              } else {
+                layer.msg(res.msg || '操作失败', {icon: 2});
+              }
+            },
+            error: function() {
+              layer.closeAll('loading');
+              layer.msg('请求失败', {icon: 2});
+            }
+          });
+        });
+      };
+      $batchBtns[1].onclick = function() {
+        var ids = getSelectedUsers();
+        if (!ids.length) return layer.msg('请选择用户', {icon: 0});
+        layer.confirm('确定要批量禁用选中用户吗？', function(idx) {
+          layer.close(idx);
+          layer.load(1);
+          $.ajax({
+            url: '/api/admin/users/batch_update',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({user_ids: ids, action: 'disable'}),
+            success: function(res) {
+              layer.closeAll('loading');
+              if (res.code === 0) {
+                layer.msg('操作成功', {icon: 1});
+                location.reload();
+              } else {
+                layer.msg(res.msg || '操作失败', {icon: 2});
+              }
+            },
+            error: function() {
+              layer.closeAll('loading');
+              layer.msg('请求失败', {icon: 2});
+            }
+          });
+        });
+      };
+      $batchBtns[2].onclick = function() {
+        var ids = getSelectedUsers();
+        if (!ids.length) return layer.msg('请选择用户', {icon: 0});
+        layer.confirm('确定要批量删除选中用户吗？此操作不可恢复！', function(idx) {
+          layer.close(idx);
+          layer.load(1);
+          $.ajax({
+            url: '/api/admin/users/batch_update',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({user_ids: ids, action: 'delete'}),
+            success: function(res) {
+              layer.closeAll('loading');
+              if (res.code === 0) {
+                layer.msg('操作成功', {icon: 1});
+                location.reload();
+              } else {
+                layer.msg(res.msg || '操作失败', {icon: 2});
+              }
+            },
+            error: function() {
+              layer.closeAll('loading');
+              layer.msg('请求失败', {icon: 2});
+            }
+          });
+        });
+      };
+    });
+  </script>
+</body>
+
+</html>

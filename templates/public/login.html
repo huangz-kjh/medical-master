@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>后台管理-登陆</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta http-equiv="Access-Control-Allow-Origin" content="*">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <!-- CDN加载Layui样式 -->
+    <link href="//unpkg.com/layui@2.10.1/dist/css/layui.css" rel="stylesheet">
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <!-- 静态导入样式文件 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+
+    <!-- 字体图标备用方案 -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 检查字体图标是否正确加载
+        setTimeout(function() {
+            var testIcon = document.createElement('i');
+            testIcon.className = 'fas fa-user';
+            testIcon.style.visibility = 'hidden';
+            document.body.appendChild(testIcon);
+            
+            var iconStyle = window.getComputedStyle(testIcon);
+            var isFontLoaded = iconStyle.fontFamily.includes('Font Awesome') || 
+                               iconStyle.fontFamily.includes('FontAwesome');
+            
+            if (!isFontLoaded) {
+                console.log('字体图标未正确加载，加载备用方案');
+                // 加载备用CSS
+                var link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = '../static/download_style/css/font-awesome-4.7.0.min.css';
+                document.head.appendChild(link);
+            }
+            
+            document.body.removeChild(testIcon);
+        }, 500);
+    });
+    </script>
+    </head>
+<body>
+<div class="layui-container">
+    <div class="admin-login-background">
+        <div class="layui-form login-form">
+            <form class="layui-form" action="{{ url_for('login') }}" method="post">
+                <div class="layui-form-item logo-title">
+                    <h1>医疗系统登录</h1>
+                </div>
+
+                {% with messages = get_flashed_messages(category_filter=["error"]) %}
+                  {% if messages %}
+                    <div class="layui-form-item">
+                      <div class="layui-form-mid layui-word-aux" style="color: red;">
+                        {{ messages[0] }}
+                      </div>
+                    </div>
+                  {% endif %}
+                {% endwith %}
+
+                <div class="layui-form-item">
+                    <label class="layui-icon layui-icon-username" for="username"></label>
+                    <input type="text" id="username" name="username" lay-verify="required|account"
+                           placeholder="用户名或者邮箱" autocomplete="off" class="layui-input" value="">
+
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-icon layui-icon-password" for="password"></label>
+                    <input type="password" id="password" name="password" lay-verify="required|password"
+                           placeholder="密码" autocomplete="off" class="layui-input">
+                </div>
+                <div class="layui-form-item">
+                    <button class="layui-btn layui-btn-normal layui-btn-fluid" lay-submit="" lay-filter="login">登 入</button>
+                </div>
+                <div class="layui-form-item" style="text-align:center;">
+                    <a class="layui-btn layui-btn-primary layui-btn-sm" href="{{ url_for('register') }}">注册新账号</a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+<!-- jQuery 3.4.1 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<!-- Layui 2.5.5 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/layui/2.5.5/layui.min.js"></script>
+<!-- Particleground 粒子背景插件 下 -->
+<script src="{{ url_for('static', filename='lib/jq-module/jquery.particleground.min.js') }}" charset="utf-8"></script>
+ <script>
+    layui.use(['form', 'layer'], function () {
+        var form = layui.form;
+        var layer = layui.layer;
+
+        // 确保粒子背景初始化
+        $(document).ready(function(){
+            $('.layui-container').particleground({
+                dotColor: '#7ec7fd',
+                lineColor: '#7ec7fd',
+                density: 10000
+            });
+        });
+
+       // 登录提交逻辑
+        form.on('submit(login)', function (data) {
+            data = data.field;
+            $.post("/login", data, function(response) {
+            if (response.status === "success") {
+                layer.msg('登录成功', {icon: 1, time: 1000}, function () {
+                    window.location.href = response.redirect;  // 成功后跳转
+                });
+                $("#contentFrame").attr("src", "/welcome");  // 确保 iframe 进入首页
+            } else {
+                layer.msg(response.message, {icon: 2});
+            }
+            });
+
+            return false;
+        });
+    });
+</script>
+
+</body>
+</html>

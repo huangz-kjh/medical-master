@@ -1,0 +1,377 @@
+{% extends 'layout.html' %}
+<!-- eslint-disable -->
+
+{% block title %}诊疗统计 - 医疗影像平台{% endblock %}
+
+{% block content %}
+<style>
+    /* 清新配色方案 */
+    :root {
+        --primary-color: #64B5F6;       /* 主色调：清新蓝 */
+        --secondary-color: #81C784;     /* 次要色：清新绿 */
+        --accent-color: #FFB74D;        /* 强调色：温暖橙 */
+        --info-color: #4FC3F7;          /* 信息色：浅蓝 */
+        --success-color: #81C784;       /* 成功色：浅绿 */
+        --warning-color: #FFB74D;       /* 警告色：浅橙 */
+        --danger-color: #E57373;        /* 危险色：浅红 */
+        --bg-color: #F5F7FA;            /* 背景色：浅灰 */
+        --text-primary: #2C3E50;        /* 主要文字：深灰蓝 */
+        --text-secondary: #7F8C8D;      /* 次要文字：中灰 */
+    }
+
+    body {
+        background-color: var(--bg-color);
+        color: var(--text-primary);
+    }
+
+    /* 卡片样式 */
+    .stats-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .stats-number {
+        font-size: 32px;
+        font-weight: 600;
+        margin: 10px 0;
+    }
+
+    .stats-title {
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+
+    .stats-icon {
+        font-size: 24px;
+        margin-bottom: 15px;
+    }
+
+    /* 图表卡片 */
+    .chart-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+
+    .chart-title {
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* 表格样式 */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table th {
+        background: #f8f9fa;
+        padding: 12px;
+        font-weight: 500;
+        text-align: left;
+        color: var(--text-primary);
+    }
+
+    .data-table td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .data-table tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    /* 状态标签 */
+    .status-tag {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .status-urgent { background: var(--danger-color); color: white; }
+    .status-warning { background: var(--warning-color); color: white; }
+    .status-normal { background: var(--success-color); color: white; }
+</style>
+
+<div class="layui-container">
+    <!-- 统计数据卡片 -->
+    <div class="layui-row layui-col-space20">
+        <div class="layui-col-md3 layui-col-sm6">
+            <div class="stats-card">
+                <i class="layui-icon layui-icon-user stats-icon" style="color: var(--primary-color)"></i>
+                <div class="stats-number" style="color: var(--primary-color)">{{ stats.total_patients }}</div>
+                <div class="stats-title">关联患者总数</div>
+            </div>
+        </div>
+        <div class="layui-col-md3 layui-col-sm6">
+            <div class="stats-card">
+                <i class="layui-icon layui-icon-add-1 stats-icon" style="color: var(--secondary-color)"></i>
+                <div class="stats-number" style="color: var(--secondary-color)">{{ stats.new_patients_month }}</div>
+                <div class="stats-title">本月新增患者</div>
+            </div>
+        </div>
+        <div class="layui-col-md3 layui-col-sm6">
+            <div class="stats-card">
+                <i class="layui-icon layui-icon-form stats-icon" style="color: var(--accent-color)"></i>
+                <div class="stats-number" style="color: var(--accent-color)">{{ stats.treatments_month }}</div>
+                <div class="stats-title">本月诊疗数</div>
+            </div>
+        </div>
+        <div class="layui-col-md3 layui-col-sm6">
+            <div class="stats-card">
+                <i class="layui-icon layui-icon-time stats-icon" style="color: var(--info-color)"></i>
+                <div class="stats-number" style="color: var(--info-color)">{{ stats.followup_count }}</div>
+                <div class="stats-title">需随访患者</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图表区域 -->
+    <div class="layui-row layui-col-space20" style="margin-top: 20px;">
+        <div class="layui-col-md6">
+            <div class="chart-card">
+                <div class="chart-title">
+                    <i class="layui-icon layui-icon-chart"></i>
+                    患者状态分布
+                </div>
+                <div id="patientStatusChart" style="height: 300px;"></div>
+            </div>
+        </div>
+        <div class="layui-col-md6">
+            <div class="chart-card">
+                <div class="chart-title">
+                    <i class="layui-icon layui-icon-group"></i>
+                    患者分组分布
+                </div>
+                <div id="patientGroupChart" style="height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-row layui-col-space20">
+        <div class="layui-col-md12">
+            <div class="chart-card">
+                <div class="chart-title">
+                    <i class="layui-icon layui-icon-chart-screen"></i>
+                    近30天诊疗趋势
+                </div>
+                <div id="treatmentTrendChart" style="height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 随访计划表格 -->
+    <div class="layui-row layui-col-space20">
+        <div class="layui-col-md12">
+            <div class="chart-card">
+                <div class="chart-title">
+                    <i class="layui-icon layui-icon-time"></i>
+                    未来随访计划
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>患者姓名</th>
+                            <th>年龄/性别</th>
+                            <th>随访原因</th>
+                            <th>计划日期</th>
+                            <th>剩余天数</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for followup in followup_patients %}
+                        <tr>
+                            <td>{{ followup.patient.name }}</td>
+                            <td>{{ followup.patient.age }}岁 / {{ followup.patient.gender }}</td>
+                            <td>{{ followup.reason if followup.reason else '常规随访' }}</td>
+                            <td>{{ followup.followup_date.strftime('%Y-%m-%d') if followup.followup_date else '未指定' }}</td>
+                            <td>
+                                <span class="status-tag {% if followup.days_remaining <= 3 %}status-urgent{% elif followup.days_remaining <= 7 %}status-warning{% else %}status-normal{% endif %}">
+                                    {{ followup.days_remaining }}天
+                                </span>
+                            </td>
+                            <td>
+                                <button class="layui-btn layui-btn-xs view-btn" data-patient-id="{{ followup.patient.patient_id }}">查看</button>
+                                <button class="layui-btn layui-btn-xs layui-btn-warm modify-btn" data-patient-id="{{ followup.patient.patient_id }}" data-followup-date="{{ followup.followup_date.strftime('%Y-%m-%d') if followup.followup_date else '' }}">修改</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+
+<script>
+
+// 图表配色方案
+const colors = ['#64B5F6', '#81C784', '#FFB74D', '#4FC3F7', '#9575CD', '#4DB6AC', '#F06292', '#A1887F'];
+
+// 图表通用配置
+const chartConfig = {
+    color: colors,
+    tooltip: {
+        trigger: 'item',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        borderColor: '#eee',
+        borderWidth: 1,
+        textStyle: { color: '#2C3E50' },
+        extraCssText: 'box-shadow: 0 2px 8px rgba(0,0,0,0.1);'
+    }
+};
+
+// 初始化图表
+function initCharts() {
+    // 从后端获取统计数据
+    fetch('/api/doctor/statistics_data')
+        .then(response => response.json())
+        .then(data => {
+            const statusRaw = data.status_counts || {};
+            const groupRaw = data.group_counts || {};
+            const trendDatesRaw = data.trend_dates || [];
+            const trendCountsRaw = data.trend_counts || [];
+
+            // 处理空数据默认值
+            const statusData = Object.keys(statusRaw).length > 0
+                ? Object.entries(statusRaw).map(([key, value]) => ({ name: key || '未知', value }))
+                : [{ name: '暂无数据', value: 1 }];
+
+            const groupData = Object.keys(groupRaw).length > 0
+                ? Object.entries(groupRaw).map(([key, value]) => ({ name: key || '未分组', value }))
+                : [{ name: '暂无数据', value: 1 }];
+
+            const trendDates = Array.isArray(trendDatesRaw) && trendDatesRaw.length > 0
+                ? trendDatesRaw
+                : Array.from({ length: 7 }, (_, i) => `近${7 - i}天`);
+
+            const trendCounts = Array.isArray(trendCountsRaw) && trendCountsRaw.length > 0
+                ? trendCountsRaw
+                : Array.from({ length: 7 }, () => 0);
+
+            // 状态图表
+            const statusChart = echarts.init(document.getElementById('patientStatusChart'));
+            statusChart.setOption({
+                ...chartConfig,
+                series: [{ name: '患者状态', type: 'pie', radius: ['45%', '70%'], label: { show: true, formatter: '{b}: {c}人' }, data: statusData }]
+            });
+
+            // 分组图表
+            const groupChart = echarts.init(document.getElementById('patientGroupChart'));
+            groupChart.setOption({
+                ...chartConfig,
+                series: [{ name: '患者分组', type: 'pie', radius: ['45%', '70%'], label: { show: true, formatter: '{b}: {c}人' }, data: groupData }]
+            });
+
+            // 趋势图表
+            const trendChart = echarts.init(document.getElementById('treatmentTrendChart'));
+            trendChart.setOption({
+                ...chartConfig,
+                grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                xAxis: { type: 'category', data: trendDates, axisLabel: { rotate: 45 } },
+                yAxis: { type: 'value', minInterval: 1 },
+                series: [{ name: '诊疗数量', type: 'line', smooth: true, data: trendCounts, areaStyle: { opacity: 0.3 } }]
+            });
+
+            window.addEventListener('resize', () => {
+                statusChart.resize();
+                groupChart.resize();
+                trendChart.resize();
+            });
+        });
+}
+
+
+// 页面加载完成后初始化图表
+document.addEventListener('DOMContentLoaded', initCharts);
+
+// 查看患者详情（弹窗模式）
+function viewPatient(patientId) {
+    layui.use('layer', function(){
+        const layer = layui.layer;
+        layer.open({
+            type: 2,
+            title: '患者详情',
+            area: ['80%', '80%'],
+            maxmin: true,
+            content: `/patients/${patientId}/detail`
+        });
+    });
+}
+
+// 修改随访日期
+function modifyFollowupDate(patientId, currentDate) {
+    layui.use(['layer', 'laydate'], function(){
+        const layer = layui.layer;
+        const laydate = layui.laydate;
+        layer.open({
+            type: 1,
+            title: '修改随访日期',
+            area: ['300px', '200px'],
+            content: `<div style="padding:20px;">
+                <input type="text" id="newDate" class="layui-input" placeholder="请选择日期">
+            </div>`,
+            success: function(layero){
+                laydate.render({
+                    elem: layero.find('#newDate')[0],
+                    type: 'date',
+                    value: currentDate || ''
+                });
+            },
+            btn: ['确定', '取消'],
+            yes: function(index, layero){
+                const value = layero.find('#newDate').val();
+                layer.close(index);
+                fetch('/api/doctor/followup_date', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ patient_id: patientId, new_date: value })
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if(res.status === 'success') {
+                        layer.msg(res.message, { icon: 1 });
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        layer.msg(res.message, { icon: 2 });
+                    }
+                })
+                .catch(() => layer.msg('请求失败', { icon: 2 }));
+            }
+        });
+    });
+}
+
+// 绑定按钮事件
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.addEventListener('click', () => viewPatient(btn.dataset.patientId));
+    });
+    document.querySelectorAll('.modify-btn').forEach(btn => {
+        btn.addEventListener('click', () => modifyFollowupDate(btn.dataset.patientId, btn.dataset.followupDate));
+    });
+});
+</script>
+{% endblock %} 

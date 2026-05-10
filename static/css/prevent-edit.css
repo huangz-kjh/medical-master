@@ -1,0 +1,63 @@
+/* 
+ * 防止内容编辑样式
+ * 用于解决文本元素显示编辑光标的问题
+ */
+
+/* 防止文本选择和编辑光标 */
+.appointment-table td, 
+.appointment-table th,
+.filter-tab,
+.detail-value,
+.detail-label,
+.page-title,
+.section-title,
+h1, h2, h3, h4, h5, h6,
+p, span, div:not([contenteditable="true"]) {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: default !important;
+}
+
+/* 明确禁止编辑 */
+[contenteditable="true"] {
+    cursor: text;
+}
+
+/* 确保操作按钮有正确的光标 */
+.btn, 
+.btn-action, 
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+button,
+a {
+    cursor: pointer !important;
+}
+
+/* 输入框和可交互元素光标 */
+input, 
+textarea, 
+select, 
+option {
+    cursor: text !important;
+    user-select: auto;
+}
+
+/* 确保表单元素可交互 */
+label {
+    cursor: pointer;
+}
+
+/* 修复搜索框样式 */
+.search-box input {
+    cursor: text !important;
+}
+
+/* 修复筛选标签光标 */
+.filter-tab, 
+.nav-item, 
+.tab-item {
+    cursor: pointer !important;
+} 

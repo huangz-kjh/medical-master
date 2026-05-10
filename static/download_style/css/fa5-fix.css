@@ -1,0 +1,155 @@
+/**
+ * Font Awesome 5 兼容修复
+ * 确保fas类图标能正确显示
+ */
+
+/* 确保fas类可以回退到fa类 */
+.fas {
+    font-family: 'Font Awesome 5 Free', 'FontAwesome', sans-serif;
+    font-weight: 900;
+}
+
+/* 确保图标可见即使字体文件未加载 */
+.fas.fa-home:before {
+    content: "\f015";
+}
+
+.fas.fa-user:before {
+    content: "\f007";
+}
+
+.fas.fa-calendar:before,
+.fas.fa-calendar-alt:before,
+.fas.fa-calendar-check:before {
+    content: "\f073";
+}
+
+.fas.fa-cog:before,
+.fas.fa-gear:before {
+    content: "\f013";
+}
+
+.fas.fa-sign-out:before,
+.fas.fa-sign-out-alt:before {
+    content: "\f08b";
+}
+
+.fas.fa-plus:before {
+    content: "\f067";
+}
+
+.fas.fa-minus:before {
+    content: "\f068";
+}
+
+.fas.fa-check:before {
+    content: "\f00c";
+}
+
+.fas.fa-times:before {
+    content: "\f00d";
+}
+
+.fas.fa-info:before,
+.fas.fa-info-circle:before {
+    content: "\f05a";
+}
+
+.fas.fa-exclamation:before,
+.fas.fa-exclamation-circle:before {
+    content: "\f06a";
+}
+
+.fas.fa-spinner:before,
+.fas.fa-sync:before,
+.fas.fa-refresh:before {
+    content: "\f021";
+}
+
+.fas.fa-chevron-left:before {
+    content: "\f053";
+}
+
+.fas.fa-chevron-right:before {
+    content: "\f054";
+}
+
+.fas.fa-chevron-up:before {
+    content: "\f077";
+}
+
+.fas.fa-chevron-down:before {
+    content: "\f078";
+}
+
+.fas.fa-bell:before {
+    content: "\f0f3";
+}
+
+.fas.fa-envelope:before {
+    content: "\f0e0";
+}
+
+.fas.fa-chart-bar:before,
+.fas.fa-bar-chart:before {
+    content: "\f080";
+}
+
+.fas.fa-heart:before {
+    content: "\f004";
+}
+
+.fas.fa-star:before {
+    content: "\f005";
+}
+
+.fas.fa-file:before {
+    content: "\f15b";
+}
+
+.fas.fa-folder:before {
+    content: "\f07b";
+}
+
+.fas.fa-search:before {
+    content: "\f002";
+}
+
+.fas.fa-stethoscope:before {
+    content: "\f0f1";
+}
+
+.fas.fa-hospital:before {
+    content: "\f0f8";
+}
+
+.fas.fa-user-md:before {
+    content: "\f0f0";
+}
+
+.fa-spin {
+    -webkit-animation: fa-spin 2s infinite linear;
+    animation: fa-spin 2s infinite linear;
+}
+
+@-webkit-keyframes fa-spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+    100% {
+        -webkit-transform: rotate(359deg);
+        transform: rotate(359deg);
+    }
+}
+
+@keyframes fa-spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+    100% {
+        -webkit-transform: rotate(359deg);
+        transform: rotate(359deg);
+    }
+} 

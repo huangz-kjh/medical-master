@@ -1,0 +1,144 @@
+{% extends "admin/base.html" %}
+
+{% block head %}
+<!-- 引入Chart.js库 -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<!-- 引入DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="layui-body">
+  <div style="padding: 15px;">
+    <div class="layui-row layui-col-space15">
+      <div class="layui-col-md12">
+        <div class="layui-card">
+          <div class="layui-card-header">
+            <h2 class="mb-4">备份设置</h2>
+          </div>
+          <div class="layui-card-body">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="layui-alert layui-alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form class="layui-form" method="post" action="{{ url_for('admin_backup_settings') }}">
+              <div class="layui-form-item">
+                <div class="layui-input-block">
+                  <input type="checkbox" name="enable_auto_backup" lay-skin="switch" lay-text="开启|关闭" 
+                         {% if backup_settings.enable_auto_backup %}checked{% endif %}>
+                  <div class="layui-form-mid layui-word-aux">启用自动备份</div>
+                </div>
+              </div>
+
+              <div class="layui-form-item">
+                <label class="layui-form-label">备份频率</label>
+                <div class="layui-input-block">
+                  <select name="backup_frequency" lay-verify="required">
+                    <option value="daily" {% if backup_settings.backup_frequency == 'daily' %}selected{% endif %}>每天</option>
+                    <option value="weekly" {% if backup_settings.backup_frequency == 'weekly' %}selected{% endif %}>每周</option>
+                    <option value="monthly" {% if backup_settings.backup_frequency == 'monthly' %}selected{% endif %}>每月</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="layui-form-item">
+                <label class="layui-form-label">保留备份数</label>
+                <div class="layui-input-block">
+                  <input type="number" name="keep_backups" required lay-verify="required|number" 
+                         placeholder="请输入保留的备份数量" autocomplete="off" class="layui-input"
+                         value="{{ backup_settings.keep_backups or 5 }}" min="1" max="30">
+                </div>
+                <div class="layui-form-mid layui-word-aux">设置系统保留的最大自动备份数量，超过此数量的最旧备份将被自动删除</div>
+              </div>
+
+              <div class="layui-form-item">
+                <div class="layui-input-block">
+                  <button class="layui-btn" lay-submit lay-filter="backupSettingsForm">保存设置</button>
+                  <a href="{{ url_for('admin_backup') }}" class="layui-btn layui-btn-primary">返回备份管理</a>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="layui-card">
+          <div class="layui-card-header">
+            <h2 class="mb-4">备份说明</h2>
+          </div>
+          <div class="layui-card-body">
+            <div class="layui-collapse" lay-accordion>
+              <div class="layui-colla-item">
+                <h2 class="layui-colla-title">自动备份</h2>
+                <div class="layui-colla-content layui-show">
+                  系统将按照设定的频率自动进行数据库备份。备份文件将保存在服务器的 backups 目录中。
+                </div>
+              </div>
+              <div class="layui-colla-item">
+                <h2 class="layui-colla-title">备份保留策略</h2>
+                <div class="layui-colla-content">
+                  当自动备份数量超过设定值时，系统将自动删除最早的备份。建议根据实际需求设置合适的保留数量。
+                </div>
+              </div>
+              <div class="layui-colla-item">
+                <h2 class="layui-colla-title">备份文件格式</h2>
+                <div class="layui-colla-content">
+                  <ul>
+                    <li>SQLite数据库: <code>.db</code> 文件</li>
+                    <li>MySQL数据库: <code>.sql</code> 文件</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="layui-alert layui-alert-warning" style="margin-top: 15px;">
+              <strong>警告：</strong> 恢复备份将覆盖当前数据库中的所有数据。请确保在恢复备份前已充分了解其中的内容。
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+layui.use(['form', 'layer', 'element'], function(){
+  var form = layui.form;
+  var layer = layui.layer;
+  var element = layui.element;
+  
+  // 监听表单提交
+  form.on('submit(backupSettingsForm)', function(data){
+    var loading = layer.load(2);
+    $.ajax({
+      url: data.form.action,
+      type: 'POST',
+      data: data.field,
+      success: function(res){
+        layer.close(loading);
+        if(res.code === 0){
+          layer.msg('设置保存成功', {icon: 1});
+          setTimeout(function(){
+            window.location.reload();
+          }, 1000);
+        } else {
+          layer.msg(res.msg || '设置保存失败', {icon: 2});
+        }
+      },
+      error: function(){
+        layer.close(loading);
+        layer.msg('服务器错误，请稍后重试', {icon: 2});
+      }
+    });
+    return false;
+  });
+});
+</script>
+{% endblock %}

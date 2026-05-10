@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D 医学影像查看器</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.staticfile.org/layui/2.8.3/css/layui.css" rel="stylesheet">
+    <!-- Glance CSS -->
+    <link href="{{ url_for('static', filename='glance/vendors.780f8e17575441251ea0.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='glance/glance.f7f1fce385809ff46cdc.css') }}" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #27ae60;
+            --secondary-color: #2980b9;
+            --accent-color: #3498db;
+            --light-color: #e8f5e9;
+            --dark-color: #1e272e;
+            --text-color: #333;
+            --bg-color: #f9f9f9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: 300px;
+            background-color: white;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .sidebar-header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        /* 控制面板 */
+        .control-panel {
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group-title {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .control-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .control-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s;
+        }
+
+        .control-btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .control-btn i {
+            font-size: 14px;
+        }
+
+        /* 文件上传区域 */
+        .upload-section {
+            margin-bottom: 20px;
+        }
+
+        .upload-btn {
+            width: 100%;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .upload-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* 查看器区域 */
+        .viewer-container {
+            flex: 1;
+            position: relative;
+            background-color: #1e1e1e;
+        }
+
+        #glance-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 工具栏 */
+        .toolbar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .tool-btn {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .tool-btn:hover {
+            background-color: white;
+            transform: scale(1.1);
+        }
+
+        .tool-btn i {
+            color: var(--dark-color);
+            font-size: 18px;
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 20px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-item i {
+            font-size: 14px;
+        }
+    </style>
+
+    <!-- 字体图标备用方案 -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 检查字体图标是否正确加载
+        setTimeout(function() {
+            var testIcon = document.createElement('i');
+            testIcon.className = 'fas fa-user';
+            testIcon.style.visibility = 'hidden';
+            document.body.appendChild(testIcon);
+            
+            var iconStyle = window.getComputedStyle(testIcon);
+            var isFontLoaded = iconStyle.fontFamily.includes('Font Awesome') || 
+                               iconStyle.fontFamily.includes('FontAwesome');
+            
+            if (!isFontLoaded) {
+                console.log('字体图标未正确加载，加载备用方案');
+                // 加载备用CSS
+                var link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = '../static/download_style/css/font-awesome-4.7.0.min.css';
+                document.head.appendChild(link);
+            }
+            
+            document.body.removeChild(testIcon);
+        }, 500);
+    });
+    </script>
+    </head>
+<body>
+    <div class="container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">3D 医学影像查看器</div>
+            </div>
+
+            <!-- 文件上传区域 -->
+            <div class="upload-section">
+                <button class="upload-btn" onclick="document.getElementById('file-input').click()">
+                    <i class="fas fa-upload"></i>
+                    上传医学影像
+                </button>
+                <input type="file" id="file-input" accept=".dcm,.nii,.nii.gz,.nrrd,.mha,.mhd,.vtk,.vtp,.ply,.stl,.obj" multiple style="display: none;">
+                <div id="file-info" style="margin-top: 10px; font-size: 12px; color: #666;"></div>
+            </div>
+
+            <!-- 视图控制面板 -->
+            <div class="control-panel">
+                <div class="control-group">
+                    <div class="control-group-title">视图控制</div>
+                    <div class="control-buttons">
+                        <button class="control-btn" onclick="resetView()">
+                            <i class="fas fa-sync-alt"></i>
+                            重置视图
+                        </button>
+                        <button class="control-btn" onclick="toggleOrientation()">
+                            <i class="fas fa-arrows-alt"></i>
+                            切换方向
+                        </button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-group-title">显示模式</div>
+                    <div class="control-buttons">
+                        <button class="control-btn" onclick="setViewMode('volume')">
+                            <i class="fas fa-cube"></i>
+                            体渲染
+                        </button>
+                        <button class="control-btn" onclick="setViewMode('surface')">
+                            <i class="fas fa-shapes"></i>
+                            表面渲染
+                        </button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-group-title">器官选择</div>
+                    <div class="control-buttons">
+                        <button class="control-btn" onclick="setOrgan('chest')">
+                            <i class="fas fa-lungs"></i>
+                            胸部
+                        </button>
+                        <button class="control-btn" onclick="setOrgan('abdomen')">
+                            <i class="fas fa-stomach"></i>
+                            腹部
+                        </button>
+                        <button class="control-btn" onclick="setOrgan('head')">
+                            <i class="fas fa-brain"></i>
+                            头部
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 查看器区域 -->
+        <div class="viewer-container">
+            <div id="glance-container"></div>
+            
+            <!-- 工具栏 -->
+            <div class="toolbar">
+                <button class="tool-btn" onclick="toggleFullscreen()">
+                    <i class="fas fa-expand"></i>
+                </button>
+                <button class="tool-btn" onclick="toggleAnnotations()">
+                    <i class="fas fa-draw-polygon"></i>
+                </button>
+                <button class="tool-btn" onclick="toggleMeasurements()">
+                    <i class="fas fa-ruler"></i>
+                </button>
+            </div>
+
+            <!-- 状态栏 -->
+            <div class="status-bar">
+                <div class="status-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span id="status-info">就绪</span>
+                </div>
+                <div class="status-item">
+                    <i class="fas fa-memory"></i>
+                    <span id="memory-usage">0 MB</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Glance JavaScript -->
+    <script src="{{ url_for('static', filename='glance/runtime.f5a0ef0d83d36acd666a.js') }}"></script>
+    <script src="{{ url_for('static', filename='glance/vendors.d53bcb900cffab7bdcf1.js') }}"></script>
+    <script src="{{ url_for('static', filename='glance/glance.d17bd366887d1e4b3b0a.js') }}"></script>
+    <script src="{{ url_for('static', filename='glance/glance-external-ITKReader.da9871a1d55694d6e967.js') }}"></script>
+    <script src="{{ url_for('static', filename='glance/glance-external-Workbox.90844adf6eef162f4191.js') }}"></script>
+    <script src="{{ url_for('static', filename='glance/workbox-a61a63fc.js') }}"></script>
+    <script src="{{ url_for('static', filename='glance/serviceWorker.js') }}"></script>
+
+    <script>
+        let glance;
+        let currentViewMode = 'volume';
+        let currentOrgan = 'chest';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化 Glance
+            const container = document.getElementById('glance-container');
+            glance = new Glance(container, {
+                background: [0.2, 0.2, 0.2],
+                orientation: [0, 0, 1],
+                viewUp: [0, 1, 0],
+                viewMode: 'volume'
+            });
+
+            // 文件上传处理
+            const fileInput = document.getElementById('file-input');
+            fileInput.addEventListener('change', function(e) {
+                const files = e.target.files;
+                if (files.length > 0) {
+                    const fileInfo = document.getElementById('file-info');
+                    fileInfo.textContent = `已选择 ${files.length} 个文件`;
+                    
+                    // 加载文件
+                    for (let i = 0; i < files.length; i++) {
+                        glance.loadFile(files[i]);
+                    }
+                    
+                    // 更新状态
+                    updateStatus('文件加载中...');
+                }
+            });
+        });
+
+        // 重置视图
+        function resetView() {
+            glance.resetCamera();
+            glance.render();
+            updateStatus('视图已重置');
+        }
+
+        // 切换方向
+        function toggleOrientation() {
+            const currentOrientation = glance.getOrientation();
+            const newOrientation = [
+                currentOrientation[1],
+                currentOrientation[2],
+                currentOrientation[0]
+            ];
+            glance.setOrientation(newOrientation);
+            glance.render();
+            updateStatus('方向已切换');
+        }
+
+        // 设置视图模式
+        function setViewMode(mode) {
+            currentViewMode = mode;
+            glance.setViewMode(mode);
+            glance.render();
+            updateStatus(`已切换到${mode === 'volume' ? '体渲染' : '表面渲染'}模式`);
+        }
+
+        // 设置器官
+        function setOrgan(organ) {
+            currentOrgan = organ;
+            const orientations = {
+                'chest': [0, 0, 1],
+                'abdomen': [0, 0, 1],
+                'head': [0, 0, 1]
+            };
+            const viewUps = {
+                'chest': [0, 1, 0],
+                'abdomen': [0, 1, 0],
+                'head': [0, 1, 0]
+            };
+            
+            if (orientations[organ]) {
+                glance.setOrientation(orientations[organ]);
+                glance.setViewUp(viewUps[organ]);
+                glance.render();
+                updateStatus(`已切换到${organ === 'chest' ? '胸部' : organ === 'abdomen' ? '腹部' : '头部'}视图`);
+            }
+        }
+
+        // 全屏显示
+        function toggleFullscreen() {
+            const element = document.getElementById('glance-container');
+            if (!document.fullscreenElement) {
+                element.requestFullscreen().catch(err => {
+                    console.error(`全屏请求失败: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // 切换标注
+        function toggleAnnotations() {
+            // 实现标注功能
+            updateStatus('标注功能已切换');
+        }
+
+        // 切换测量
+        function toggleMeasurements() {
+            // 实现测量功能
+            updateStatus('测量功能已切换');
+        }
+
+        // 更新状态信息
+        function updateStatus(message) {
+            document.getElementById('status-info').textContent = message;
+        }
+
+        // 更新内存使用情况
+        function updateMemoryUsage() {
+            const memory = performance.memory;
+            if (memory) {
+                const usedMB = Math.round(memory.usedJSHeapSize / 1048576);
+                document.getElementById('memory-usage').textContent = `${usedMB} MB`;
+            }
+        }
+
+        // 定期更新内存使用情况
+        setInterval(updateMemoryUsage, 1000);
+    </script>
+</body>
+</html>
